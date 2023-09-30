@@ -1,0 +1,4 @@
+<h1>{{ sportTitle }}</h1>
+<div class="button-row" *ngFor="let sport of sportsData">
+  <a mat-button [routerLink]="['/sport', sportTitle, 'league', sport.key]" >{{ sport.title }}</a>
+</div>

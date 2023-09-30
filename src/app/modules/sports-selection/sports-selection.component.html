@@ -1,0 +1,4 @@
+<h1>Select a Sport</h1>
+<div class="button-row" *ngFor="let sport of uniqueSports">
+  <a mat-button [routerLink]="['/sport', sport]">{{ sport }}</a>
+</div>
