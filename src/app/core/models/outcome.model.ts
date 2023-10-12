@@ -1,6 +1,6 @@
 export interface Outcome {
     name: string;
     price: number;
-    points?: string;
+    point?: string;
     description?: string
 }

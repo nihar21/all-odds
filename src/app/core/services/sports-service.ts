@@ -41,7 +41,7 @@ export class SportsService {
   }
 
   getAllOdds(sport: string = "upcoming", markets?: Market, regions: Region = Region.US, oddsFormat: OddsFormat = OddsFormat.american): Observable<GenericOdds[]> {
-    const url = 'https://api.the-odds-api.com/v4/sports/' + sport + "/odds/?apiKey=b4bfd1cbef0039a797cf01b3b62bc2bc&regions=" + regions + "&oddsFormat=" + oddsFormat;
+    const url = 'https://api.the-odds-api.com/v4/sports/' + sport + "/odds/?apiKey=b4bfd1cbef0039a797cf01b3b62bc2bc&regions=" + regions + "&oddsFormat=" + oddsFormat + "&markets=h2h,spreads,totals";
 
     return this.cacheService.cacheRequest(url, this.apiService.get<GenericOdds[]>(url));
     // return this.apiService.get<GenericOdds[]>(url);

@@ -6,7 +6,7 @@ export interface GenericOdds {
     sport_title: string;
     commence_time: Date;
     home_team?: string;
-    away_team?: boolean;
+    away_team?: string;
     has_outrights: boolean;
     bookmakers: Bookmaker[];
   }
