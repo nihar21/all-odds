@@ -14,10 +14,10 @@ jobs:
       - name: Install Node
         uses: actions/setup-node@v3
         with:
-          node-version: 18.3.0
+          node-version: 16.x
       - name: npm dependencies
         run: npm install     
-      - run: ng build --configuration production
+      - run: npx ng build --configuration production
       - uses: FirebaseExtended/action-hosting-deploy@v0
         with:
           repoToken: '${{ secrets.GITHUB_TOKEN }}'
