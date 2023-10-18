@@ -1,0 +1,477 @@
+[
+    {
+      "Conference": "American Athletic",
+      "Abbreviation": "CIN",
+      "Team": "Cincinnati Bearcats",
+      "Pic": "./collegeFootball/logos/cincinnati.png"
+    },
+    {
+      "Conference": "American Athletic",
+      "Abbreviation": "CONN",
+      "Team": "Connecticut Huskies",
+      "Pic": "./collegeFootball/logos/connecticut.png"
+    },
+    {
+      "Conference": "American Athletic",
+      "Abbreviation": "ECU",
+      "Team": "East Carolina Pirates",
+      "Pic": "./collegeFootball/logos/eastCarolina.png"
+    },
+    {
+      "Conference": "American Athletic",
+      "Abbreviation": "HOU",
+      "Team": "Houston Cougars",
+      "Pic": "./collegeFootball/logos/houston.png"
+    },
+    {
+      "Conference": "American Athletic",
+      "Abbreviation": "MEM",
+      "Team": "Memphis Tigers",
+      "Pic": "./collegeFootball/logos/memphis.png"
+    },
+    {
+      "Conference": "American Athletic",
+      "Abbreviation": "NAVY",
+      "Team": "Navy Midshipmen",
+      "Pic": "./collegeFootball/logos/navy.png"
+    },
+    {
+      "Conference": "American Athletic",
+      "Abbreviation": "SMU",
+      "Team": "SMU Mustangs",
+      "Pic": "./collegeFootball/logos/smu.png"
+    },
+    {
+      "Conference": "American Athletic",
+      "Abbreviation": "USF",
+      "Team": "South Florida Bulls",
+      "Pic": "./collegeFootball/logos/southFlorida.png"
+    },
+    {
+      "Conference": "American Athletic",
+      "Abbreviation": "TEM",
+      "Team": "Temple Owls",
+      "Pic": "./collegeFootball/logos/temple.png"
+    },
+    {
+      "Conference": "American Athletic",
+      "Abbreviation": "TULN",
+      "Team": "Tulane Green Wave",
+      "Pic": "./collegeFootball/logos/tulane.png"
+    },
+    {
+      "Conference": "American Athletic",
+      "Abbreviation": "TLSA",
+      "Team": "Tulsa Golden Hurricane",
+      "Pic": "./collegeFootball/logos/tulsa.png"
+    },
+    {
+      "Conference": "American Athletic",
+      "Abbreviation": "UCF",
+      "Team": "UCF Knights",
+      "Pic": "./collegeFootball/logos/ucf.png"
+    },
+    {
+      "Conference": "ACC",
+      "Abbreviation": "BC",
+      "Team": "Boston College Eagles",
+      "Pic": "./collegeFootball/logos/boston.png"
+    },
+    {
+      "Conference": "ACC",
+      "Abbreviation": "CLEM",
+      "Team": "Clemson Tigers",
+      "Pic": "./collegeFootball/logos/clemson.png"
+    },
+    {
+      "Conference": "ACC",
+      "Abbreviation": "DUKE",
+      "Team": "Duke Blue Devils",
+      "Pic": "./collegeFootball/logos/duke.png"
+    },
+    {
+      "Conference": "ACC",
+      "Abbreviation": "FSU",
+      "Team": "Florida State Seminoles",
+      "Pic": "./collegeFootball/logos/floridaState.png"
+    },
+    {
+      "Conference": "ACC",
+      "Abbreviation": "GT",
+      "Team": "Georgia Tech Yellow Jackets",
+      "Pic": "./collegeFootball/logos/georgiaTech.png"
+    },
+    {
+      "Conference": "ACC",
+      "Abbreviation": "LOU",
+      "Team": "Louisville Cardinals",
+      "Pic": "./collegeFootball/logos/louisville.png"
+    },
+    {
+      "Conference": "ACC",
+      "Abbreviation": "MIAMI",
+      "Team": "Miami Hurricanes",
+      "Pic": "./collegeFootball/logos/miami.png"
+    },
+    {
+      "Conference": "ACC",
+      "Abbreviation": "NCST",
+      "Team": "NC State Wolfpack",
+      "Pic": "./collegeFootball/logos/ncState.png"
+    },
+    {
+      "Conference": "ACC",
+      "Abbreviation": "NC",
+      "Team": "North Carolina Tar Heels",
+      "Pic": "./collegeFootball/logos/northCarolina.png"
+    },
+    {
+      "Conference": "ACC",
+      "Abbreviation": "PITT",
+      "Team": "Pittsburgh Panthers",
+      "Pic": "./collegeFootball/logos/pittsburgh.png"
+    },
+    {
+      "Conference": "ACC",
+      "Abbreviation": "SYR",
+      "Team": "Syracuse Orange",
+      "Pic": "./collegeFootball/logos/syracuse.png"
+    },
+    {
+      "Conference": "ACC",
+      "Abbreviation": "UVA",
+      "Team": "Virginia Cavaliers",
+      "Pic": "./collegeFootball/logos/virginia.png"
+    },
+    {
+      "Conference": "ACC",
+      "Abbreviation": "VT",
+      "Team": "Virginia Tech Hokies",
+      "Pic": "./collegeFootball/logos/virginiaTech.png"
+    },
+    {
+      "Conference": "ACC",
+      "Abbreviation": "WF",
+      "Team": "Wake Forest Demon Deacons",
+      "Pic": "./collegeFootball/logos/wakeForest.png"
+    },
+    {
+      "Conference": "Big 12",
+      "Abbreviation": "BAY",
+      "Team": "Baylor Bears",
+      "Pic": "./collegeFootball/logos/baylor.png"
+    },
+    {
+      "Conference": "Big 12",
+      "Abbreviation": "ISU",
+      "Team": "Iowa State Cyclones",
+      "Pic": "./collegeFootball/logos/iowaState.png"
+    },
+    {
+      "Conference": "Big 12",
+      "Abbreviation": "KU",
+      "Team": "Kansas Jayhawks",
+      "Pic": "./collegeFootball/logos/kansas.png"
+    },
+    {
+      "Conference": "Big 12",
+      "Abbreviation": "KSU",
+      "Team": "Kansas State Wildcats",
+      "Pic": "./collegeFootball/logos/kansasState.png"
+    },
+    {
+      "Conference": "Big 12",
+      "Abbreviation": "OKLA",
+      "Team": "Oklahoma Sooners",
+      "Pic": "./collegeFootball/logos/oklahoma.png"
+    },
+    {
+      "Conference": "Big 12",
+      "Abbreviation": "OKST",
+      "Team": "Oklahoma State Cowboys",
+      "Pic": "./collegeFootball/logos/oklahomaState.png"
+    },
+    {
+      "Conference": "Big 12",
+      "Abbreviation": "TCU",
+      "Team": "TCU Horned Frogs",
+      "Pic": "./collegeFootball/logos/tcu.png"
+    },
+    {
+      "Conference": "Big 12",
+      "Abbreviation": "TEX",
+      "Team": "Texas Longhorns",
+      "Pic": "./collegeFootball/logos/texas.png"
+    },
+    {
+      "Conference": "Big 12",
+      "Abbreviation": "TTU",
+      "Team": "Texas Tech Red Raiders",
+      "Pic": "./collegeFootball/logos/texasTech.png"
+    },
+    {
+      "Conference": "Big 12",
+      "Abbreviation": "WVU",
+      "Team": "West Virginia Mountaineers",
+      "Pic": "./collegeFootball/logos/westVirginia.png"
+    },
+    {
+      "Conference": "Big Ten",
+      "Team": "Illinois Fighting Illini",
+      "Abbreviation": "ILL",
+      "Pic": "./collegeFootball/logos/illinois.png"
+    },
+    {
+      "Conference": "Big Ten",
+      "Team": "Indiana Hoosiers",
+      "Abbreviation": "IND",
+      "Pic": "./collegeFootball/logos/indiana.png"
+    },
+    {
+      "Conference": "Big Ten",
+      "Team": "Iowa Hawkeyes",
+      "Abbreviation": "IOWA",
+      "Pic": "./collegeFootball/logos/iowa.png"
+    },
+    {
+      "Conference": "Big Ten",
+      "Team": "Maryland Terrapins",
+      "Abbreviation": "MARY",
+      "Pic": "./collegeFootball/logos/maryland.png"
+    },
+    {
+      "Conference": "Big Ten",
+      "Team": "Michigan Wolverines",
+      "Abbreviation": "MICH",
+      "Pic": "./collegeFootball/logos/michigan.png"
+    },
+    {
+      "Conference": "Big Ten",
+      "Team": "Michigan State Spartans",
+      "Abbreviation": "MIST",
+      "Pic": "./collegeFootball/logos/michiganState.png"
+    },
+    {
+      "Conference": "Big Ten",
+      "Team": "Minnesota Golden Gophers",
+      "Abbreviation": "MINN",
+      "Pic": "./collegeFootball/logos/minnesota.png"
+    },
+    {
+      "Conference": "Big Ten",
+      "Team": "Nebraska Cornhuskers",
+      "Abbreviation": "NEB",
+      "Pic": "./collegeFootball/logos/nebraska.png"
+    },
+    {
+      "Conference": "Big Ten",
+      "Team": "Northwestern Wildcats",
+      "Abbreviation": "NWEST",
+      "Pic": "./collegeFootball/logos/northwestern.png"
+    },
+    {
+      "Conference": "Big Ten",
+      "Team": "Ohio State Buckeyes",
+      "Abbreviation": "OHST",
+      "Pic": "./collegeFootball/logos/ohioState.png"
+    },
+    {
+      "Conference": "Big Ten",
+      "Team": "Penn State Nittany Lions",
+      "Abbreviation": "PSU",
+      "Pic": "./collegeFootball/logos/pennState.png"
+    },
+    {
+      "Conference": "Big Ten",
+      "Team": "Purdue Boilermakers",
+      "Abbreviation": "PURD",
+      "Pic": "./collegeFootball/logos/purdue.png"
+    },
+    {
+      "Conference": "Big Ten",
+      "Team": "Rutgers Scarlet Knights",
+      "Abbreviation": "RUTG",
+      "Pic": "./collegeFootball/logos/rutgers.png"
+    },
+    {
+      "Conference": "Big Ten",
+      "Team": "Wisconsin Badgers",
+      "Abbreviation": "WIS",
+      "Pic": "./collegeFootball/logos/wisconsin.png"
+    },
+    {
+      "Conference": "Conference USA",
+      "Team": "Charlotte 49ers",
+      "Abbreviation": "CHAR",
+      "Pic": "./collegeFootball/logos/charlotte.png"
+    },
+    {
+      "Conference": "Conference USA",
+      "Team": "Florida Atlantic Owls",
+      "Abbreviation": "FAU",
+      "Pic": "./collegeFootball/logos/floridaAtlantic.png"
+    },
+    {
+      "Conference": "Conference USA",
+      "Team": "Florida Intl Golden Panthers",
+      "Abbreviation": "FIU",
+      "Pic": "./collegeFootball/logos/floridaIntl.png"
+    },
+    {
+      "Conference": "Conference USA",
+      "Team": "Louisiana Tech Bulldogs",
+      "Abbreviation": "LT",
+      "Pic": "./collegeFootball/logos/louisianaTech.png"
+    },
+    {
+      "Conference": "Conference USA",
+      "Team": "Marshall Thundering Herd",
+      "Abbreviation": "MRSH",
+      "Pic": "./collegeFootball/logos/marshall.png"
+    },
+    {
+      "Conference": "Conference USA",
+      "Team": "Middle Tennessee Blue Raiders",
+      "Abbreviation": "MTSU",
+      "Pic": "./collegeFootball/logos/middleTennessee.png"
+    },
+    {
+      "Conference": "Conference USA",
+      "Team": "North Texas Mean Green",
+      "Abbreviation": "UNT",
+      "Pic": "./collegeFootball/logos/northTexas.png"
+    },
+    {
+      "Conference": "Conference USA",
+      "Team": "Old Dominion Monarchs",
+      "Abbreviation": "ODU",
+      "Pic": "./collegeFootball/logos/oldDominion.png"
+    },
+    {
+      "Conference": "Conference USA",
+      "Team": "Rice Owls",
+      "Abbreviation": "RICE",
+      "Pic": "./collegeFootball/logos/rice.png"
+    },
+    {
+      "Conference": "Conference USA",
+      "Team": "Southern Mississippi Golden Eagles",
+      "Abbreviation": "USM",
+      "Pic": "./collegeFootball/logos/southernMississippi.png"
+    },
+    {
+      "Conference": "Conference USA",
+      "Team": "Texas San Antonio Roadrunners",
+      "Abbreviation": "UTSA",
+      "Pic": "./collegeFootball/logos/texasSanAntonio.png"
+    },
+    {
+      "Conference": "Conference USA",
+      "Team": "UAB Blazers",
+      "Abbreviation": "UAB",
+      "Pic": "./collegeFootball/logos/uab.png"
+    },
+    {
+      "Conference": "Conference USA",
+      "Team": "UTEP Miners",
+      "Abbreviation": "UTEP",
+      "Pic": "./collegeFootball/logos/utep.png"
+    },
+    {
+      "Conference": "Conference USA",
+      "Team": "Western Kentucky Hilltoppers",
+      "Abbreviation": "WKU",
+      "Pic": "./collegeFootball/logos/westernKentucky.png"
+    },
+    {
+      "Conference": "FBS Independents",
+      "Team": "Army Black Knights",
+      "Abbreviation": "ARMY",
+      "Pic": "./collegeFootball/logos/army.png"
+    },
+    {
+      "Conference": "FBS Independents",
+      "Team": "BYU Cougars",
+      "Abbreviation": "BYU",
+      "Pic": "./collegeFootball/logos/byu.png"
+    },
+    {
+      "Conference": "FBS Independents",
+      "Team": "Notre Dame Fighting Irish",
+      "Abbreviation": "NDAME",
+      "Pic": "./collegeFootball/logos/notreDame.png"
+    },
+    {
+      "Conference": "Mid-American",
+      "Team": "Akron Zips",
+      "Abbreviation": "AKRN",
+      "Pic": "./collegeFootball/logos/akron.png"
+    },
+    {
+      "Conference": "Mid-American",
+      "Team": "Ball State Cardinals",
+      "Abbreviation": "BALL",
+      "Pic": "./collegeFootball/logos/ballState.png"
+    },
+    {
+      "Conference": "Mid-American",
+      "Team": "Bowling Green Falcons",
+      "Abbreviation": "BGSU",
+      "Pic": "./collegeFootball/logos/bowlingGreen.png"
+    },
+    {
+      "Conference": "Mid-American",
+      "Team": "Buffalo Bulls",
+      "Abbreviation": "BUFF",
+      "Pic": "./collegeFootball/logos/buffalo.png"
+    },
+    {
+      "Conference": "Mid-American",
+      "Team": "Central Michigan Chippewas",
+      "Abbreviation": "CMICH",
+      "Pic": "./collegeFootball/logos/centralMichigan.png"
+    },
+    {
+      "Conference": "Mid-American",
+      "Team": "Eastern Michigan Eagles",
+      "Abbreviation": "EMU",
+      "Pic": "./collegeFootball/logos/easternMichigan.png"
+    },
+    {
+      "Conference": "Mid-American",
+      "Team": "Kent State Golden Flashes",
+      "Abbreviation": "KENT",
+      "Pic": "./collegeFootball/logos/kentState.png"
+    },
+    {
+      "Conference": "Mid-American",
+      "Team": "Miami (OH) RedHawks",
+      "Abbreviation": "MIAO",
+      "Pic": "./collegeFootball/logos/miamiOh.png"
+    },
+    {
+      "Conference": "Mid-American",
+      "Team": "Northern Illinois Huskies",
+      "Abbreviation": "NIU",
+      "Pic": "./collegeFootball/logos/northernIllinois.png"
+    },
+    {
+      "Conference": "Mid-American",
+      "Team": "Ohio Bobcats",
+      "Abbreviation": "OHIO",
+      "Pic": "./collegeFootball/logos/ohio.png"
+    },
+    {
+      "Conference": "Mid-American",
+      "Team": "Toledo Rockets",
+      "Abbreviation": "TOL",
+      "Pic": "./collegeFootball/logos/toledo.png"
+    },
+    {
+      "Conference": "Mid-American",
+      "Team": "Western Michigan Broncos",
+      "Abbreviation": "WMICH",
+      "Pic": "./collegeFootball/logos/westernMichigan.png"
+    }
+  ]
+  

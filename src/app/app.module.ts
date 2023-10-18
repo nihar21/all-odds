@@ -13,6 +13,9 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 
 import { MatButtonModule } from '@angular/material/button';
 
+import { initializeApp } from "firebase/app";
+import { getAnalytics } from "firebase/analytics";
+
 @NgModule({
   declarations: [
     AppComponent
@@ -31,3 +34,17 @@ import { MatButtonModule } from '@angular/material/button';
   bootstrap: [AppComponent]
 })
 export class AppModule { }
+
+const firebaseConfig = {
+  apiKey: "AIzaSyBXC1_YjBXCtYHdiY_nQjTnyJs-sFhuQQY",
+  authDomain: "all-odds-f088a.firebaseapp.com",
+  projectId: "all-odds-f088a",
+  storageBucket: "all-odds-f088a.appspot.com",
+  messagingSenderId: "1043649113634",
+  appId: "1:1043649113634:web:067f3a847c6c1cbe7ce47b",
+  measurementId: "G-5TZZNE530M"
+};
+
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+const analytics = getAnalytics(app);

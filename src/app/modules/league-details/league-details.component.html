@@ -1,19 +1,17 @@
 <h1>{{ league }}</h1>
+<div>
+    <select [(ngModel)]="masterMarket" (change)="onMasterMarketChange()">
+        <option *ngFor="let marketKey of allMarketKeys" [value]="marketKey">{{ marketKey }}</option>
+    </select>
+</div>
 <!-- Iterate over events data -->
 <div *ngFor="let event of events" class="event">
     <h2>{{ event.away_team }} @ {{ event.home_team }}</h2>
-    <h3>{{ event.commence_time | date:'short' }}</h3>
+    <h3>Game Time: {{ event.commence_time | date:'EEEE, M/d/yy, h:mm a' }}</h3>
     <!-- Dropdown for Market Type Selection -->
     <select [(ngModel)]="selectedMarket[event.id.toString()]">
-        <option *ngFor="let market of event.bookmakers[0].markets" [selected]="market.key === 'h2h'" [value]="market.key">{{ market.key }}</option>
+        <option *ngFor="let marketKey of allMarketKeys" [value]="marketKey">{{ marketKey }}</option>
     </select>
-    <!-- Display the spread or total point above the table -->
-    <div *ngIf="selectedMarket[event.id] === 'spreads'">
-        Spread: {{ getPointValue(event, 'spreads') }}
-    </div>
-    <div *ngIf="selectedMarket[event.id] === 'totals'">
-        O/U: {{ getPointValue(event, 'totals') }}
-    </div>
     <div class="scrollable-table-container">
         <!-- Table to display odds for each sportsbook -->
         <table>
@@ -21,18 +19,42 @@
             <thead>
                 <tr>
                     <th>Teams/Odds</th>
-                    <th *ngFor="let bookmaker of event.bookmakers">{{ bookmaker.title }}</th>
+                    <th *ngFor="let bookmaker of allBookmakers">{{ bookmaker.title }}</th>
                 </tr>
             </thead>
             <tbody>
-                <ng-container *ngFor="let outcome of getSelectedMarketOutcomes(event)">
-                    <tr>
-                        <td>{{ outcome.name }}</td>
-                        <td *ngFor="let bookmaker of event.bookmakers">
-                            {{ getOddsForSelectedMarket(bookmaker, outcome.name, selectedMarket[event.id]) }}
-                        </td>
-                    </tr>
-                </ng-container>
+                <!-- New row for Spread/Total Value -->
+                <tr *ngIf="selectedMarket[event.id] === 'spreads' || selectedMarket[event.id] === 'totals'">
+                    <td><!-- This can be empty or have some label like "Spread/Total" --></td>
+                    <td *ngFor="let bookmaker of allBookmakers">
+                        <ng-container *ngIf="selectedMarket[event.id] === 'spreads'">
+                            <!-- Find the favored team for spread and display -->
+                            {{ getFavoredTeamSpread(event, bookmaker.key) }}
+                        </ng-container>
+                        <ng-container *ngIf="selectedMarket[event.id] === 'totals'">
+                            <!-- Display the total value for totals -->
+                            {{ getOverUnderValue(event, bookmaker.key) }}
+                        </ng-container>
+                    </td>
+                </tr>
+                <!-- Row for away team or Under -->
+                <tr>
+                    <td>
+                        {{ getDisplayValue(event, 'away')}}
+                    </td>
+                    <td *ngFor="let bookmaker of allBookmakers">
+                        {{ getOddsForSelectedMarket(event, bookmaker.key, selectedMarket[event.id] === 'totals' ? 'Over' : event.away_team, selectedMarket[event.id]) }}
+                    </td>
+                </tr>
+                <!-- Row for home team or Over -->
+                <tr>
+                    <td>
+                        {{ getDisplayValue(event, 'home')}}
+                    </td>
+                    <td *ngFor="let bookmaker of allBookmakers">
+                        {{ getOddsForSelectedMarket(event, bookmaker.key, selectedMarket[event.id] === 'totals' ? 'Under' : event.home_team, selectedMarket[event.id]) }}
+                    </td>
+                </tr>
             </tbody>
         </table>
     </div>

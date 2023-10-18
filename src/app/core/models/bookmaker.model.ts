@@ -6,3 +6,5 @@ export interface Bookmaker {
     last_update: Date;
     markets: Market[];
   }
+  
+export type BookmakerSubset = Pick<Bookmaker, 'key' | 'title'>;
