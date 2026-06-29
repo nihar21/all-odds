@@ -57,6 +57,23 @@ export interface OddsRow {
   sublabel?: string;
 }
 
+/**
+ * Soccer (and other "3-way" sports) include a draw as a third h2h outcome named
+ * "Draw" (occasionally "Tie"). Returns the outcome name as it appears in the
+ * data, or null when the matchup has no draw line (e.g. NFL, NBA).
+ */
+export function drawOutcomeName(event: OddsEvent): string | null {
+  for (const book of event.bookmakers) {
+    const h2h = book.markets.find((m) => m.key === 'h2h');
+    const draw = h2h?.outcomes.find((o) => {
+      const n = o.name.toLowerCase();
+      return n === 'draw' || n === 'tie';
+    });
+    if (draw) return draw.name;
+  }
+  return null;
+}
+
 export function rowsForMarket(event: OddsEvent, market: MarketKey): OddsRow[] {
   const away = event.away_team ?? 'Away';
   const home = event.home_team ?? 'Home';
@@ -67,7 +84,19 @@ export function rowsForMarket(event: OddsEvent, market: MarketKey): OddsRow[] {
       { outcomeName: 'Under', label: 'Under', sublabel: 'Combined points' },
     ];
   }
-  // h2h + spreads share the away/home structure.
+
+  // Moneyline: home/away, plus a Draw row for 3-way (soccer) matchups.
+  if (market === 'h2h') {
+    const rows: OddsRow[] = [{ outcomeName: away, label: away, sublabel: 'Away' }];
+    const draw = drawOutcomeName(event);
+    if (draw) {
+      rows.push({ outcomeName: draw, label: 'Draw', sublabel: 'Tie' });
+    }
+    rows.push({ outcomeName: home, label: home, sublabel: 'Home' });
+    return rows;
+  }
+
+  // Spreads (incl. soccer handicaps) remain a two-way away/home structure.
   return [
     { outcomeName: away, label: away, sublabel: 'Away' },
     { outcomeName: home, label: home, sublabel: 'Home' },
