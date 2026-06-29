@@ -46,7 +46,7 @@ export function BookFilter({ label, size = 'md' }: BookFilterProps) {
           </Label>
         )}
         <Button
-          aria-label={label ? undefined : 'Filter sportsbooks'}
+          aria-label={label ?? 'Filter sportsbooks'}
           className={`group flex items-center justify-between gap-3 rounded-xl border border-white/10 bg-ink-800/80 ${pad} font-medium text-white outline-none transition hover:border-white/20 hover:bg-ink-700/80 pressed:bg-ink-700 data-[focus-visible]:ring-2 data-[focus-visible]:ring-accent/70`}
         >
           <span className="flex items-center gap-2">

@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import type { MarketKey, OddsEvent } from '../types';
 import { bookColumns, formatGameTime, isLive, marketSummary } from '../lib/odds';
 import { MARKET_LABELS } from '../constants';
@@ -17,7 +18,10 @@ export function EventCard({ event, market, onMarketChange }: EventCardProps) {
   const summary = marketSummary(event, market);
   const { favorites } = useFavoriteBooks();
   // Count the books actually shown so the header matches the filtered table.
-  const bookCount = bookColumns(event, favorites).length;
+  const bookCount = useMemo(
+    () => bookColumns(event, favorites).length,
+    [event, favorites],
+  );
 
   return (
     <article className="card-surface animate-fade-up overflow-hidden">
