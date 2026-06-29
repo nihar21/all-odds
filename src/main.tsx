@@ -8,6 +8,7 @@ import { ErrorView } from './components/ErrorView';
 import { SportsSelection } from './pages/SportsSelection';
 import { SportDetail } from './pages/SportDetail';
 import { LeagueDetails } from './pages/LeagueDetails';
+import { LiveSports } from './pages/LiveSports';
 
 const router = createBrowserRouter([
   {
@@ -22,6 +23,7 @@ const router = createBrowserRouter([
     ),
     children: [
       { path: '/', element: <SportsSelection /> },
+      { path: '/live', element: <LiveSports /> },
       { path: '/sport/:group', element: <SportDetail /> },
       { path: '/sport/:group/league/:leagueKey', element: <LeagueDetails /> },
     ],
