@@ -8,6 +8,7 @@ import {
   getOutcome,
   rowsForMarket,
 } from '../lib/odds';
+import { useFavoriteBooks } from '../hooks/useFavoriteBooks';
 
 interface OddsTableProps {
   event: OddsEvent;
@@ -15,7 +16,11 @@ interface OddsTableProps {
 }
 
 export function OddsTable({ event, market }: OddsTableProps) {
-  const columns = useMemo(() => bookColumns(event), [event]);
+  const { favorites } = useFavoriteBooks();
+  const columns = useMemo(
+    () => bookColumns(event, favorites),
+    [event, favorites],
+  );
   const rows = useMemo(() => rowsForMarket(event, market), [event, market]);
   const best = useMemo(
     () =>
@@ -26,9 +31,14 @@ export function OddsTable({ event, market }: OddsTableProps) {
   );
 
   if (columns.length === 0) {
+    // Distinguish "this matchup has no odds at all" from "your favorites have no
+    // odds for it" so the empty filter result is actionable.
+    const hasAnyBooks = event.bookmakers.length > 0;
     return (
       <p className="px-1 py-6 text-center text-sm text-slate-400">
-        No sportsbook odds available for this matchup yet.
+        {hasAnyBooks && favorites.size > 0
+          ? 'None of your favorite sportsbooks have odds for this matchup. Adjust your favorites to see more.'
+          : 'No sportsbook odds available for this matchup yet.'}
       </p>
     );
   }

@@ -1,6 +1,7 @@
 import type { MarketKey, OddsEvent } from '../types';
-import { formatGameTime, isLive, marketSummary } from '../lib/odds';
+import { bookColumns, formatGameTime, isLive, marketSummary } from '../lib/odds';
 import { MARKET_LABELS } from '../constants';
+import { useFavoriteBooks } from '../hooks/useFavoriteBooks';
 import { MarketSelect } from './MarketSelect';
 import { OddsTable } from './OddsTable';
 
@@ -14,7 +15,9 @@ export function EventCard({ event, market, onMarketChange }: EventCardProps) {
   const { day, time } = formatGameTime(event.commence_time);
   const live = isLive(event.commence_time);
   const summary = marketSummary(event, market);
-  const bookCount = event.bookmakers.length;
+  const { favorites } = useFavoriteBooks();
+  // Count the books actually shown so the header matches the filtered table.
+  const bookCount = bookColumns(event, favorites).length;
 
   return (
     <article className="card-surface animate-fade-up overflow-hidden">
@@ -43,8 +46,9 @@ export function EventCard({ event, market, onMarketChange }: EventCardProps) {
             {event.home_team ?? 'Home'}
           </h3>
           <p className="mt-0.5 text-xs text-slate-500">
-            {bookCount} sportsbook{bookCount === 1 ? '' : 's'} · best price
-            highlighted
+            {bookCount === 0
+              ? 'No favorite sportsbooks with odds'
+              : `${bookCount} sportsbook${bookCount === 1 ? '' : 's'} · best price highlighted`}
           </p>
         </div>
         <div className="shrink-0">

@@ -7,6 +7,7 @@ import { Breadcrumbs } from '../components/Breadcrumbs';
 import { EventListSkeleton } from '../components/Skeleton';
 import { ErrorView } from '../components/ErrorView';
 import { MarketSelect } from '../components/MarketSelect';
+import { BookFilter } from '../components/BookFilter';
 import { EventCard } from '../components/EventCard';
 
 export function LeagueDetails() {
@@ -65,12 +66,15 @@ export function LeagueDetails() {
           </p>
         </div>
         {!loading && !error && events.length > 0 && (
-          <MarketSelect
-            value={master}
-            onChange={handleMasterChange}
-            label="Market"
-            size="md"
-          />
+          <div className="flex flex-wrap items-end gap-3">
+            <BookFilter label="Sportsbooks" size="md" />
+            <MarketSelect
+              value={master}
+              onChange={handleMasterChange}
+              label="Market"
+              size="md"
+            />
+          </div>
         )}
       </div>
 
