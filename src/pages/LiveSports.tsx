@@ -15,6 +15,10 @@ interface SportGroup {
 }
 
 export function LiveSports() {
+  // Live data is served from the session cache (see `cachedGet` in lib/api),
+  // so this view reflects a snapshot from first load and does not auto-refresh
+  // — a deliberate tradeoff to conserve the public odds API's limited credits.
+  // Reload the page to fetch the latest live games.
   const { data, loading, error } = useAsync(() => getUpcomingOdds(), []);
 
   // Only games already in progress, grouped by sport and sorted by start time.
