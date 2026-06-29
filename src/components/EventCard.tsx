@@ -3,6 +3,7 @@ import { formatGameTime, isLive, marketSummary } from '../lib/odds';
 import { MARKET_LABELS } from '../constants';
 import { MarketSelect } from './MarketSelect';
 import { OddsTable } from './OddsTable';
+import { TeamLogo } from './TeamLogo';
 
 interface EventCardProps {
   event: OddsEvent;
@@ -37,10 +38,12 @@ export function EventCard({ event, market, onMarketChange }: EventCardProps) {
               </span>
             )}
           </div>
-          <h3 className="truncate font-display text-lg font-semibold text-white">
-            {event.away_team ?? 'Away'}{' '}
-            <span className="text-slate-500">@</span>{' '}
-            {event.home_team ?? 'Home'}
+          <h3 className="flex min-w-0 items-center gap-2 font-display text-lg font-semibold text-white">
+            <TeamLogo team={event.away_team} size={24} />
+            <span className="truncate">{event.away_team ?? 'Away'}</span>
+            <span className="shrink-0 text-slate-500">@</span>
+            <TeamLogo team={event.home_team} size={24} />
+            <span className="truncate">{event.home_team ?? 'Home'}</span>
           </h3>
           <p className="mt-0.5 text-xs text-slate-500">
             {bookCount} sportsbook{bookCount === 1 ? '' : 's'} · best price
