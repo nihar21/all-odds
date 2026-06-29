@@ -69,11 +69,15 @@ without waiting for further prompting, except at the explicit checkpoint noted:
 5. **Address every finding**: push fixes, and reply on threads where a finding
    is intentionally not actioned (with the reason), then resolve those threads.
 6. **Confirm green**: CI build check passes and all review findings are resolved.
-7. **Squash-merge automatically** once steps 5–6 are satisfied. No confirmation
-   needed — the user has authorized auto-merge when green. Use the **squash**
-   merge method.
+7. **Get sign-off, then squash-merge.** Once steps 5–6 are satisfied, ask the
+   user and **wait for explicit approval before merging any PR that changes
+   application code** (anything under `src/`, build config, deps, CI, etc.). Do
+   not auto-merge feature/code PRs. Use the **squash** merge method.
+   - **Exception — trivial PRs that don't affect the actual code/app** (e.g.
+     docs-only, `CLAUDE.md`, comments, README) may be squash-merged
+     automatically once CI is green, no sign-off needed.
 
 If a review finding is ambiguous or implies a large refactor, ask before acting
-rather than guessing. Do not auto-merge if CI is failing or findings are
+rather than guessing. Never merge while CI is failing or findings are
 unresolved. This workflow is for code features/issues; skip the code-review step
 for docs-only or config-only changes (there is nothing executable to review).
