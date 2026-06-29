@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { LiveSportsButton } from '../components/LiveSportsButton';
 import { Input, Label, SearchField } from 'react-aria-components';
 import { getSportsList } from '../lib/api';
 import { useAsync } from '../hooks/useAsync';
@@ -46,6 +47,9 @@ export function SportsSelection() {
           Compare moneylines, spreads, and totals side by side. Pick a sport to
           dive into live lines from FanDuel, DraftKings, BetMGM and more.
         </p>
+        <div className="mt-5">
+          <LiveSportsButton />
+        </div>
       </section>
 
       {!loading && !error && groups.length > 0 && (
