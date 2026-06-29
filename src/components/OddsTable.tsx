@@ -99,7 +99,7 @@ export function OddsTable({ event, market }: OddsTableProps) {
                           </span>
                         )}
                         <span
-                          className={`font-mono font-600 ${
+                          className={`font-mono font-semibold ${
                             isBest ? 'text-accent-soft' : 'text-slate-100'
                           }`}
                         >

@@ -103,10 +103,38 @@ export function rowsForMarket(event: OddsEvent, market: MarketKey): OddsRow[] {
   ];
 }
 
+interface PriceCell {
+  key: string;
+  price: number;
+  point?: number;
+}
+
+/** The point value posted by the most sportsbooks for a row (the modal line). */
+function modalPoint(cells: PriceCell[]): number | undefined {
+  const counts = new Map<number, number>();
+  for (const c of cells) {
+    if (c.point === undefined) continue;
+    counts.set(c.point, (counts.get(c.point) ?? 0) + 1);
+  }
+  let modal: number | undefined;
+  let modalCount = 0;
+  for (const [point, count] of counts) {
+    if (count > modalCount) {
+      modalCount = count;
+      modal = point;
+    }
+  }
+  return modal;
+}
+
 /**
- * Best (most favorable to the bettor) American price wins outright: a higher
- * number always pays more (+150 > +120, -110 > -120). Returns the set of book
- * keys that share the best price for the row, for highlighting.
+ * Returns the set of book keys offering the best (most favorable to the bettor)
+ * price for a row, for highlighting. A higher American price always pays more
+ * (+150 > +120, -110 > -120).
+ *
+ * For spreads/totals each book may post a different line (`point`), so comparing
+ * price alone is apples-to-oranges. We therefore compare prices only among books
+ * sharing the most common line; books on a different line are not highlighted.
  */
 export function bestBooksForRow(
   event: OddsEvent,
@@ -114,16 +142,30 @@ export function bestBooksForRow(
   outcomeName: string,
   columns: BookColumn[],
 ): Set<string> {
-  let best = -Infinity;
-  for (const col of columns) {
-    const outcome = getOutcome(event, col.key, market, outcomeName);
-    if (outcome && outcome.price > best) best = outcome.price;
-  }
+  const cells = columns
+    .map((col): PriceCell | null => {
+      const outcome = getOutcome(event, col.key, market, outcomeName);
+      return outcome
+        ? { key: col.key, price: outcome.price, point: outcome.point }
+        : null;
+    })
+    .filter((c): c is PriceCell => c !== null);
+
   const winners = new Set<string>();
-  if (best === -Infinity) return winners;
-  for (const col of columns) {
-    const outcome = getOutcome(event, col.key, market, outcomeName);
-    if (outcome && outcome.price === best) winners.add(col.key);
+  if (cells.length === 0) return winners;
+
+  // Moneyline has no line to reconcile; otherwise restrict to the modal line.
+  let eligible = cells;
+  if (market !== 'h2h') {
+    const line = modalPoint(cells);
+    if (line !== undefined) {
+      eligible = cells.filter((c) => c.point === line);
+    }
+  }
+
+  const best = Math.max(...eligible.map((c) => c.price));
+  for (const c of eligible) {
+    if (c.price === best) winners.add(c.key);
   }
   return winners;
 }

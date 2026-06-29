@@ -8,8 +8,8 @@ import { CardGridSkeleton } from '../components/Skeleton';
 import { ErrorView } from '../components/ErrorView';
 
 export function SportDetail() {
-  const { group = '' } = useParams();
-  const groupName = decodeURIComponent(group);
+  // React Router already URL-decodes route params, so use `group` directly.
+  const { group: groupName = '' } = useParams();
   const { data, loading, error } = useAsync(getSportsList, []);
 
   const leagues = useMemo(
@@ -26,7 +26,7 @@ export function SportDetail() {
           {sportIcon(groupName)}
         </span>
         <div>
-          <h1 className="font-display text-2xl font-700 tracking-tight text-white sm:text-3xl">
+          <h1 className="font-display text-2xl font-bold tracking-tight text-white sm:text-3xl">
             {groupName}
           </h1>
           <p className="text-sm text-slate-400">Choose a league to compare odds.</p>
@@ -63,7 +63,7 @@ export function SportDetail() {
               >
                 <div className="min-w-0">
                   <div className="flex items-center gap-2">
-                    <span className="font-display text-base font-600 text-white">
+                    <span className="font-display text-base font-semibold text-white">
                       {league.title}
                     </span>
                     {league.active && (

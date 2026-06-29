@@ -31,7 +31,7 @@ export function Layout({ children }: LayoutProps) {
                 <path d="M16 8h5v5" />
               </svg>
             </span>
-            <span className="font-display text-lg font-700 tracking-tight text-white">
+            <span className="font-display text-lg font-bold tracking-tight text-white">
               All<span className="text-accent">Odds</span>
             </span>
           </Link>

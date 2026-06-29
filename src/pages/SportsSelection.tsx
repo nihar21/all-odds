@@ -39,7 +39,7 @@ export function SportsSelection() {
         <span className="pill mb-4 border-accent/30 bg-accent/10 text-accent-soft">
           Live across every major sportsbook
         </span>
-        <h1 className="font-display text-3xl font-700 tracking-tight text-white sm:text-4xl">
+        <h1 className="font-display text-3xl font-bold tracking-tight text-white sm:text-4xl">
           Find the best odds, instantly.
         </h1>
         <p className="mt-3 max-w-xl text-slate-400">
@@ -106,7 +106,7 @@ export function SportsSelection() {
               >
                 <span className="text-3xl">{sportIcon(g.group)}</span>
                 <span>
-                  <span className="block font-display text-base font-600 text-white">
+                  <span className="block font-display text-base font-semibold text-white">
                     {g.group}
                   </span>
                   <span className="text-xs text-slate-500">

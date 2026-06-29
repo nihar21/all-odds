@@ -10,8 +10,8 @@ import { MarketSelect } from '../components/MarketSelect';
 import { EventCard } from '../components/EventCard';
 
 export function LeagueDetails() {
-  const { group = '', leagueKey = '' } = useParams();
-  const groupName = decodeURIComponent(group);
+  // React Router already URL-decodes route params, so use `group` directly.
+  const { group: groupName = '', leagueKey = '' } = useParams();
 
   const { data, loading, error } = useAsync(
     () => getAllOdds(leagueKey),
@@ -55,7 +55,7 @@ export function LeagueDetails() {
 
       <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between animate-fade-up">
         <div>
-          <h1 className="font-display text-2xl font-700 tracking-tight text-white sm:text-3xl">
+          <h1 className="font-display text-2xl font-bold tracking-tight text-white sm:text-3xl">
             {leagueTitle}
           </h1>
           <p className="text-sm text-slate-400">

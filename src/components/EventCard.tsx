@@ -37,7 +37,7 @@ export function EventCard({ event, market, onMarketChange }: EventCardProps) {
               </span>
             )}
           </div>
-          <h3 className="truncate font-display text-lg font-600 text-white">
+          <h3 className="truncate font-display text-lg font-semibold text-white">
             {event.away_team ?? 'Away'}{' '}
             <span className="text-slate-500">@</span>{' '}
             {event.home_team ?? 'Home'}
