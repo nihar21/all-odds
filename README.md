@@ -1,27 +1,56 @@
 # AllOdds
 
-This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 16.2.1.
+Compare live sports betting odds across every major US sportsbook in one place.
+Pick a sport, drill into a league, and view moneyline / spread / total lines side
+by side — with the **best available price for each outcome highlighted**.
 
-## Development server
+Odds data comes from [the-odds-api.com](https://the-odds-api.com/).
 
-Run `ng serve` for a dev server. Navigate to `http://localhost:4200/`. The application will automatically reload if you change any of the source files.
+## Tech stack
 
-## Code scaffolding
+- **React 18** + **TypeScript**
+- **Vite** for dev/build
+- **Tailwind CSS** for styling (custom dark "sportsbook" theme)
+- **React Aria Components** for accessible, design-system primitives (selects, search, etc.)
+- **React Router** for routing
+- **Firebase** Hosting + Analytics
 
-Run `ng generate component component-name` to generate a new component. You can also use `ng generate directive|pipe|service|class|guard|interface|enum|module`.
+> This app was migrated from its original Angular 16 implementation to React.
 
-## Build
+## Routes
 
-Run `ng build` to build the project. The build artifacts will be stored in the `dist/` directory.
+| Path                                      | View                                            |
+| ----------------------------------------- | ----------------------------------------------- |
+| `/`                                       | Sport groups (e.g. American Football, Soccer)   |
+| `/sport/:group`                           | Leagues within a sport group                    |
+| `/sport/:group/league/:leagueKey`         | Odds comparison table for a league's matchups   |
 
-## Running unit tests
+## Development
 
-Run `ng test` to execute the unit tests via [Karma](https://karma-runner.github.io).
+```bash
+npm install
+npm run dev        # start the dev server at http://localhost:4200
+```
 
-## Running end-to-end tests
+Other scripts:
 
-Run `ng e2e` to execute the end-to-end tests via a platform of your choice. To use this command, you need to first add a package that implements end-to-end testing capabilities.
+```bash
+npm run build      # type-check + production build into dist/all-odds
+npm run preview    # preview the production build
+npm run lint       # type-check only (tsc --noEmit)
+```
 
-## Further help
+## Configuration
 
-To get more help on the Angular CLI use `ng help` or go check out the [Angular CLI Overview and Command Reference](https://angular.io/cli) page.
+The odds-API key is read from the `VITE_ODDS_API_KEY` environment variable, with a
+fallback to the project's existing key. To use your own key, create a `.env`:
+
+```bash
+VITE_ODDS_API_KEY=your_key_here
+```
+
+## Deployment
+
+Firebase Hosting serves the `dist/all-odds` build output (see `firebase.json`).
+The GitHub Actions workflows run `npm ci && npm run build` and deploy to Firebase
+on PRs (preview channel) and merges to `main` (live).
