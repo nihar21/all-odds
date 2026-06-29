@@ -7,7 +7,7 @@ import { Breadcrumbs } from '../components/Breadcrumbs';
 import { EventListSkeleton } from '../components/Skeleton';
 import { ErrorView } from '../components/ErrorView';
 import { MarketSelect } from '../components/MarketSelect';
-import { DateSelect, ALL_DAYS } from '../components/DateSelect';
+import { DatePicker, ALL_DAYS } from '../components/DatePicker';
 import { EventCard } from '../components/EventCard';
 import { dateKey } from '../lib/odds';
 
@@ -93,12 +93,11 @@ export function LeagueDetails() {
         </div>
         {!loading && !error && events.length > 0 && (
           <div className="flex flex-wrap items-end gap-3">
-            <DateSelect
+            <DatePicker
               dates={dates}
               value={selectedDate}
               onChange={setSelectedDate}
               label="Date"
-              size="md"
             />
             <MarketSelect
               value={master}
