@@ -10,7 +10,7 @@ import { ErrorView } from '../components/ErrorView';
 import { MarketSelect } from '../components/MarketSelect';
 import { DatePicker, ALL_DAYS } from '../components/DatePicker';
 import { EventCard } from '../components/EventCard';
-import { dateKey, isLive } from '../lib/odds';
+import { dateKey } from '../lib/odds';
 
 export function LeagueDetails() {
   // React Router already URL-decodes route params, so use `group` directly.
@@ -31,15 +31,22 @@ export function LeagueDetails() {
 
   const leagueTitle = events[0]?.sport_title ?? leagueKey;
 
-  // Poll scores for this sport only when a game is actually in progress, to
-  // conserve API quota. `daysFrom: 1` also returns recently-completed games so
-  // their final scores can surface. `leagueKey` is the concrete sport key here.
-  const hasLive = useMemo(
-    () => events.some((e) => isLive(e.commence_time)),
-    [events],
-  );
-  const scores = useLiveScores(hasLive ? [leagueKey] : [], {
-    enabled: hasLive,
+  // Poll scores for this sport when a game is in progress OR recently started,
+  // to conserve API quota while still surfacing finals after the last game ends
+  // (gating strictly on `isLive` would drop just-completed finals immediately).
+  // `daysFrom: 1` returns recently-completed games. `leagueKey` is the concrete
+  // sport key here.
+  const shouldPollScores = useMemo(() => {
+    // ~6h covers an in-progress game plus a post-game window for finals.
+    const windowMs = 6 * 60 * 60 * 1000;
+    const now = Date.now();
+    return events.some((e) => {
+      const start = new Date(e.commence_time).getTime();
+      return start <= now && now - start <= windowMs;
+    });
+  }, [events]);
+  const scores = useLiveScores(shouldPollScores ? [leagueKey] : [], {
+    enabled: shouldPollScores,
     daysFrom: 1,
   });
 

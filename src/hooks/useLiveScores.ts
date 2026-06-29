@@ -42,12 +42,17 @@ export function useLiveScores(
     }
 
     let cancelled = false;
+    // Monotonic run id: a slow poll that resolves after a newer one started
+    // must not clobber the newer result (out-of-order responses).
+    let latestRun = 0;
 
     const load = async () => {
+      const run = ++latestRun;
       const results = await Promise.allSettled(
         keyList.map((key) => getScores(key, { daysFrom })),
       );
-      if (cancelled) return;
+      // Ignore if unmounted/deps changed, or a newer poll has since started.
+      if (cancelled || run !== latestRun) return;
 
       const next = new Map<string, ScoreEvent>();
       for (const result of results) {
