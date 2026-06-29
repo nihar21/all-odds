@@ -21,8 +21,15 @@ export function LeagueDetails() {
   // markets before fetching its odds — requesting h2h/spreads/totals for them
   // returns nothing usable.
   const { data, loading, error } = useAsync(async () => {
-    const sports = await getSportsList();
-    const outright = sports.find((s) => s.key === leagueKey)?.has_outrights ?? false;
+    // The outright lookup is best-effort: if the sports list fails to load,
+    // fall back to the game markets so a normal league still loads its odds.
+    let outright = false;
+    try {
+      const sports = await getSportsList();
+      outright = sports.find((s) => s.key === leagueKey)?.has_outrights ?? false;
+    } catch {
+      /* keep outright = false */
+    }
     const events = await getAllOdds(leagueKey, {
       markets: outright ? 'outrights' : 'h2h,spreads,totals',
     });
