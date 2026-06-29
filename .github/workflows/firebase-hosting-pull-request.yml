@@ -2,14 +2,17 @@
 # https://github.com/firebase/firebase-tools
 
 name: Deploy to Firebase Hosting on PR
-'on': pull_request
+'on':
+  pull_request:
+  workflow_dispatch:
 permissions:
   checks: write
   contents: read
   pull-requests: write
 jobs:
   build_and_preview:
-    if: '${{ github.event.pull_request.head.repo.full_name == github.repository }}'
+    # Run for same-repo PRs, or whenever manually dispatched from a branch.
+    if: '${{ github.event_name == ''workflow_dispatch'' || github.event.pull_request.head.repo.full_name == github.repository }}'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -23,3 +26,6 @@ jobs:
           repoToken: '${{ secrets.GITHUB_TOKEN }}'
           firebaseServiceAccount: '${{ secrets.FIREBASE_SERVICE_ACCOUNT_ALL_ODDS_F088A }}'
           projectId: all-odds-f088a
+          # PR runs auto-name the preview channel; manual runs deploy to a
+          # stable per-branch channel so they never hit the live site.
+          channelId: '${{ github.event_name == ''workflow_dispatch'' && format(''manual-{0}'', github.ref_name) || '''' }}'

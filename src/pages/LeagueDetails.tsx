@@ -7,7 +7,9 @@ import { Breadcrumbs } from '../components/Breadcrumbs';
 import { EventListSkeleton } from '../components/Skeleton';
 import { ErrorView } from '../components/ErrorView';
 import { MarketSelect } from '../components/MarketSelect';
+import { DatePicker, ALL_DAYS } from '../components/DatePicker';
 import { EventCard } from '../components/EventCard';
+import { dateKey } from '../lib/odds';
 
 export function LeagueDetails() {
   // React Router already URL-decodes route params, so use `group` directly.
@@ -28,14 +30,39 @@ export function LeagueDetails() {
 
   const leagueTitle = events[0]?.sport_title ?? leagueKey;
 
+  // Distinct local days that actually have events, in chronological order.
+  // `events` is already sorted by commence_time, so first-seen order is sorted.
+  const dates = useMemo<string[]>(() => {
+    const seen = new Set<string>();
+    const ordered: string[] = [];
+    for (const event of events) {
+      const key = dateKey(event.commence_time);
+      if (!seen.has(key)) {
+        seen.add(key);
+        ordered.push(key);
+      }
+    }
+    return ordered;
+  }, [events]);
+
   // Master market drives all events; per-event overrides are tracked separately.
   const [master, setMaster] = useState<MarketKey>('h2h');
   const [perEvent, setPerEvent] = useState<Record<string, MarketKey>>({});
 
-  // Reset per-event selections whenever a fresh league's events arrive.
+  // Selected local day, or ALL_DAYS to show everything.
+  const [selectedDate, setSelectedDate] = useState<string>(ALL_DAYS);
+
+  // Filter to the selected day (keeping the existing time-sort).
+  const visibleEvents = useMemo<OddsEvent[]>(() => {
+    if (selectedDate === ALL_DAYS) return events;
+    return events.filter((e) => dateKey(e.commence_time) === selectedDate);
+  }, [events, selectedDate]);
+
+  // Reset per-event selections and date filter whenever a fresh league loads.
   useEffect(() => {
     setPerEvent({});
     setMaster('h2h');
+    setSelectedDate(ALL_DAYS);
   }, [leagueKey]);
 
   function handleMasterChange(market: MarketKey) {
@@ -61,16 +88,24 @@ export function LeagueDetails() {
           <p className="text-sm text-slate-400">
             {loading
               ? 'Loading live lines…'
-              : `${events.length} upcoming ${events.length === 1 ? 'matchup' : 'matchups'}`}
+              : `${visibleEvents.length} upcoming ${visibleEvents.length === 1 ? 'matchup' : 'matchups'}`}
           </p>
         </div>
         {!loading && !error && events.length > 0 && (
-          <MarketSelect
-            value={master}
-            onChange={handleMasterChange}
-            label="Market"
-            size="md"
-          />
+          <div className="flex flex-wrap items-end gap-3">
+            <DatePicker
+              dates={dates}
+              value={selectedDate}
+              onChange={setSelectedDate}
+              label="Date"
+            />
+            <MarketSelect
+              value={master}
+              onChange={handleMasterChange}
+              label="Market"
+              size="md"
+            />
+          </div>
         )}
       </div>
 
@@ -90,9 +125,16 @@ export function LeagueDetails() {
         />
       )}
 
-      {!loading && !error && events.length > 0 && (
+      {!loading && !error && events.length > 0 && visibleEvents.length === 0 && (
+        <ErrorView
+          title="No games on this day"
+          message="There are no events scheduled for the selected date. Try another day or pick “All days”."
+        />
+      )}
+
+      {!loading && !error && visibleEvents.length > 0 && (
         <div className="space-y-5">
-          {events.map((event) => (
+          {visibleEvents.map((event) => (
             <EventCard
               key={event.id}
               event={event}
