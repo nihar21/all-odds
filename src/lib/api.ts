@@ -60,3 +60,21 @@ export function getAllOdds(
     `?apiKey=${API_KEY}&regions=${regions}&oddsFormat=${oddsFormat}&markets=h2h,spreads,totals`;
   return cachedGet<OddsEvent[]>(url);
 }
+
+/**
+ * Odds for games across every in-season sport, using the API's special
+ * `upcoming` sport key. The response includes games currently in progress
+ * (live) alongside the next ones to start, so callers can filter to whichever
+ * subset they need (see `isLive`).
+ *
+ * Note: `upcoming` returns a bounded set rather than an exhaustive list, so a
+ * live game in a less-popular sport may occasionally not appear. This is a
+ * deliberate tradeoff — the complete alternative (querying every active sport)
+ * would multiply API-credit usage. Results are also served from the session
+ * cache in `cachedGet`, so see the caching note there for freshness behavior.
+ */
+export function getUpcomingOdds(
+  opts: { regions?: Region; oddsFormat?: OddsFormat } = {},
+): Promise<OddsEvent[]> {
+  return getAllOdds('upcoming', opts);
+}
