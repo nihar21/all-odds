@@ -1,17 +1,21 @@
 import type { BookmakerInfo, MarketKey } from './types';
 
+// Markets offered by the game-odds picker. `outrights` is intentionally
+// excluded — it has no head-to-head counterpart and renders via OutrightCard.
 export const MARKET_KEYS: MarketKey[] = ['h2h', 'spreads', 'totals'];
 
 export const MARKET_LABELS: Record<MarketKey, string> = {
   h2h: 'Moneyline',
   spreads: 'Spread',
   totals: 'Total (O/U)',
+  outrights: 'Winner',
 };
 
 export const MARKET_DESCRIPTIONS: Record<MarketKey, string> = {
   h2h: 'Pick the outright winner.',
   spreads: 'Bet against the point spread.',
   totals: 'Bet the combined score over or under.',
+  outrights: 'Bet the outright tournament or event winner.',
 };
 
 // Preferred ordering + display titles for sportsbooks. Columns are derived from

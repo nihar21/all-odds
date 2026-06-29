@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { getAllOdds } from '../lib/api';
+import { getAllOdds, getSportsList } from '../lib/api';
 import { useAsync } from '../hooks/useAsync';
 import type { MarketKey, OddsEvent } from '../types';
 import { Breadcrumbs } from '../components/Breadcrumbs';
@@ -9,20 +9,31 @@ import { ErrorView } from '../components/ErrorView';
 import { MarketSelect } from '../components/MarketSelect';
 import { DatePicker, ALL_DAYS } from '../components/DatePicker';
 import { EventCard } from '../components/EventCard';
+import { OutrightCard } from '../components/OutrightCard';
 import { dateKey } from '../lib/odds';
 
 export function LeagueDetails() {
   // React Router already URL-decodes route params, so use `group` directly.
   const { group: groupName = '', leagueKey = '' } = useParams();
 
-  const { data, loading, error } = useAsync(
-    () => getAllOdds(leagueKey),
-    [leagueKey],
-  );
+  // Outright/futures sports (golf, politics, …) only offer the `outrights`
+  // market, so look the league up in the (cached) sports list to pick the right
+  // markets before fetching its odds — requesting h2h/spreads/totals for them
+  // returns nothing usable.
+  const { data, loading, error } = useAsync(async () => {
+    const sports = await getSportsList();
+    const outright = sports.find((s) => s.key === leagueKey)?.has_outrights ?? false;
+    const events = await getAllOdds(leagueKey, {
+      markets: outright ? 'outrights' : 'h2h,spreads,totals',
+    });
+    return { events, outright };
+  }, [leagueKey]);
+
+  const outright = data?.outright ?? false;
 
   const events = useMemo<OddsEvent[]>(() => {
     if (!data) return [];
-    return [...data].sort(
+    return [...data.events].sort(
       (a, b) =>
         new Date(a.commence_time).getTime() - new Date(b.commence_time).getTime(),
     );
@@ -88,10 +99,12 @@ export function LeagueDetails() {
           <p className="text-sm text-slate-400">
             {loading
               ? 'Loading live lines…'
-              : `${visibleEvents.length} upcoming ${visibleEvents.length === 1 ? 'matchup' : 'matchups'}`}
+              : outright
+                ? `${visibleEvents.length} ${visibleEvents.length === 1 ? 'market' : 'markets'}`
+                : `${visibleEvents.length} upcoming ${visibleEvents.length === 1 ? 'matchup' : 'matchups'}`}
           </p>
         </div>
-        {!loading && !error && events.length > 0 && (
+        {!loading && !error && !outright && events.length > 0 && (
           <div className="flex flex-wrap items-end gap-3">
             <DatePicker
               dates={dates}
@@ -134,16 +147,20 @@ export function LeagueDetails() {
 
       {!loading && !error && visibleEvents.length > 0 && (
         <div className="space-y-5">
-          {visibleEvents.map((event) => (
-            <EventCard
-              key={event.id}
-              event={event}
-              market={perEvent[event.id] ?? master}
-              onMarketChange={(m) =>
-                setPerEvent((prev) => ({ ...prev, [event.id]: m }))
-              }
-            />
-          ))}
+          {visibleEvents.map((event) =>
+            outright ? (
+              <OutrightCard key={event.id} event={event} />
+            ) : (
+              <EventCard
+                key={event.id}
+                event={event}
+                market={perEvent[event.id] ?? master}
+                onMarketChange={(m) =>
+                  setPerEvent((prev) => ({ ...prev, [event.id]: m }))
+                }
+              />
+            ),
+          )}
         </div>
       )}
     </div>
