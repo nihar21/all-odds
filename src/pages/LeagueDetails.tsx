@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { getAllOdds } from '../lib/api';
 import { useAsync } from '../hooks/useAsync';
+import { useLiveScores } from '../hooks/useLiveScores';
 import type { MarketKey, OddsEvent } from '../types';
 import { Breadcrumbs } from '../components/Breadcrumbs';
 import { EventListSkeleton } from '../components/Skeleton';
@@ -9,7 +10,7 @@ import { ErrorView } from '../components/ErrorView';
 import { MarketSelect } from '../components/MarketSelect';
 import { DatePicker, ALL_DAYS } from '../components/DatePicker';
 import { EventCard } from '../components/EventCard';
-import { dateKey } from '../lib/odds';
+import { dateKey, isLive } from '../lib/odds';
 
 export function LeagueDetails() {
   // React Router already URL-decodes route params, so use `group` directly.
@@ -29,6 +30,18 @@ export function LeagueDetails() {
   }, [data]);
 
   const leagueTitle = events[0]?.sport_title ?? leagueKey;
+
+  // Poll scores for this sport only when a game is actually in progress, to
+  // conserve API quota. `daysFrom: 1` also returns recently-completed games so
+  // their final scores can surface. `leagueKey` is the concrete sport key here.
+  const hasLive = useMemo(
+    () => events.some((e) => isLive(e.commence_time)),
+    [events],
+  );
+  const scores = useLiveScores(hasLive ? [leagueKey] : [], {
+    enabled: hasLive,
+    daysFrom: 1,
+  });
 
   // Distinct local days that actually have events, in chronological order.
   // `events` is already sorted by commence_time, so first-seen order is sorted.
@@ -142,6 +155,7 @@ export function LeagueDetails() {
               onMarketChange={(m) =>
                 setPerEvent((prev) => ({ ...prev, [event.id]: m }))
               }
+              score={scores.get(event.id)}
             />
           ))}
         </div>

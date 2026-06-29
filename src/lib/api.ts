@@ -1,4 +1,4 @@
-import type { OddsEvent, OddsFormat, Region, Sport } from '../types';
+import type { OddsEvent, OddsFormat, Region, ScoreEvent, Sport } from '../types';
 
 // The odds-API key is necessarily public in a client-only app. Allow overriding
 // via a Vite env var, falling back to the project's existing key.
@@ -19,11 +19,13 @@ export class ApiError extends Error {
   }
 }
 
-async function cachedGet<T>(url: string): Promise<T> {
-  if (cache.has(url)) {
-    return cache.get(url) as T;
-  }
-
+/**
+ * Fetch + parse JSON for a URL, mapping non-2xx responses to `ApiError`.
+ * Performs no caching — callers that want session caching go through
+ * `cachedGet`; freshness-sensitive callers (e.g. live scores) call this
+ * directly so every request hits the network.
+ */
+async function fetchJson<T>(url: string): Promise<T> {
   const res = await fetch(url);
   if (!res.ok) {
     let detail = '';
@@ -39,7 +41,15 @@ async function cachedGet<T>(url: string): Promise<T> {
     );
   }
 
-  const data = (await res.json()) as T;
+  return (await res.json()) as T;
+}
+
+async function cachedGet<T>(url: string): Promise<T> {
+  if (cache.has(url)) {
+    return cache.get(url) as T;
+  }
+
+  const data = await fetchJson<T>(url);
   cache.set(url, data);
   return data;
 }
@@ -77,4 +87,25 @@ export function getUpcomingOdds(
   opts: { regions?: Region; oddsFormat?: OddsFormat } = {},
 ): Promise<OddsEvent[]> {
   return getAllOdds('upcoming', opts);
+}
+
+/**
+ * Live + recently-completed scores for a single sport key from the v4 `/scores`
+ * endpoint. Does NOT support the special `upcoming` key — callers must pass a
+ * concrete sport key (one request per sport).
+ *
+ * Deliberately uses the UNCACHED `fetchJson` (not `cachedGet`): live scores
+ * change as games progress, and the session cache has no TTL, so caching here
+ * would freeze scores at their first-seen value. Pollers should call at ~30s
+ * cadence (the API refreshes live scores roughly every 30s; faster only burns
+ * quota). `daysFrom` (1–3) additionally returns recently-completed games so
+ * finals can be shown, at the cost of extra quota — pass it only when needed.
+ */
+export function getScores(
+  sportKey: string,
+  { daysFrom }: { daysFrom?: number } = {},
+): Promise<ScoreEvent[]> {
+  let url = `${BASE_URL}/sports/${sportKey}/scores/?apiKey=${API_KEY}&dateFormat=iso`;
+  if (daysFrom !== undefined) url += `&daysFrom=${daysFrom}`;
+  return fetchJson<ScoreEvent[]>(url);
 }
