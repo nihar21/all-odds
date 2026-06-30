@@ -35,6 +35,11 @@ export class KalshiApiError extends Error {
   }
 }
 
+// Simple in-memory request cache, mirroring `cachedGet` in lib/api.ts: the
+// same URL won't be re-fetched within a session (e.g. resubmitting the same
+// series-ticker filter on the preview page).
+const cache = new Map<string, KalshiMarket[]>();
+
 /**
  * Open markets from Kalshi's public `/markets` endpoint. Optionally scoped to
  * one series (e.g. a sports series ticker) via `seriesTicker`; omit it to get
@@ -46,12 +51,29 @@ export async function getKalshiMarkets({
 }: { seriesTicker?: string; limit?: number } = {}): Promise<KalshiMarket[]> {
   const params = new URLSearchParams({ status: 'open', limit: String(limit) });
   if (seriesTicker) params.set('series_ticker', seriesTicker);
+  const url = `${KALSHI_BASE_URL}/markets?${params}`;
 
-  const res = await fetch(`${KALSHI_BASE_URL}/markets?${params}`);
-  if (!res.ok) {
-    throw new KalshiApiError(`Request failed with status ${res.status}`, res.status);
+  if (cache.has(url)) {
+    return cache.get(url)!;
   }
+
+  const res = await fetch(url);
+  if (!res.ok) {
+    let detail = '';
+    try {
+      const body = await res.json();
+      detail = body?.message ?? '';
+    } catch {
+      /* ignore parse errors */
+    }
+    throw new KalshiApiError(
+      detail || `Request failed with status ${res.status}`,
+      res.status,
+    );
+  }
+
   const body = (await res.json()) as KalshiMarketsResponse;
+  cache.set(url, body.markets);
   return body.markets;
 }
 
