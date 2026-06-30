@@ -46,6 +46,16 @@ export function Layout({ children }: LayoutProps) {
             >
               Sports
             </Link>
+            <Link
+              to="/live"
+              aria-current={pathname === '/live' ? 'page' : undefined}
+              className={`flex items-center gap-1.5 rounded-lg px-3 py-2 font-medium transition hover:bg-white/5 ${
+                pathname === '/live' ? 'text-white' : 'text-slate-400'
+              }`}
+            >
+              <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-rose-400" />
+              Live
+            </Link>
             <a
               href="https://the-odds-api.com/"
               target="_blank"

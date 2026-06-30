@@ -87,7 +87,32 @@ export function drawOutcomeName(event: OddsEvent): string | null {
   return null;
 }
 
+/**
+ * Rows for an outright/futures market: one per competitor, ordered favorites
+ * first. Competitors come from the union of every book's `outrights` outcomes
+ * (books don't always list the same field). "Favorite" is ranked by each
+ * competitor's most favorable American price across books — the shortest odds
+ * (e.g. -150) sort ahead of longshots (e.g. +6000).
+ */
+export function outrightRows(event: OddsEvent): OddsRow[] {
+  const bestPrice = new Map<string, number>();
+  for (const book of event.bookmakers) {
+    const market = book.markets.find((m) => m.key === 'outrights');
+    for (const outcome of market?.outcomes ?? []) {
+      const current = bestPrice.get(outcome.name);
+      if (current === undefined || outcome.price > current) {
+        bestPrice.set(outcome.name, outcome.price);
+      }
+    }
+  }
+  return Array.from(bestPrice.keys())
+    .sort((a, b) => bestPrice.get(a)! - bestPrice.get(b)!)
+    .map((name) => ({ outcomeName: name, label: name }));
+}
+
 export function rowsForMarket(event: OddsEvent, market: MarketKey): OddsRow[] {
+  if (market === 'outrights') return outrightRows(event);
+
   const away = event.away_team ?? 'Away';
   const home = event.home_team ?? 'Home';
 
@@ -227,4 +252,41 @@ export function formatGameTime(iso: string): { day: string; time: string } {
 
 export function isLive(iso: string): boolean {
   return new Date(iso).getTime() <= Date.now();
+}
+
+/**
+ * Local-day key for an event's ISO timestamp, formatted `YYYY-MM-DD`. Uses the
+ * viewer's local timezone (consistent with `formatGameTime`) so events group by
+ * the day they actually appear to start, not UTC.
+ */
+export function dateKey(iso: string): string {
+  const date = new Date(iso);
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, '0');
+  const d = String(date.getDate()).padStart(2, '0');
+  return `${y}-${m}-${d}`;
+}
+
+/**
+ * Friendly label for a local-day key (`YYYY-MM-DD`): "Today", "Tomorrow", or a
+ * short weekday/date like "Sat, Jul 4".
+ */
+export function formatDateLabel(key: string): string {
+  const [y, m, d] = key.split('-').map(Number);
+  const date = new Date(y, m - 1, d);
+
+  const today = new Date();
+  const todayKey = dateKey(today.toISOString());
+  const tomorrow = new Date(today);
+  tomorrow.setDate(today.getDate() + 1);
+  const tomorrowKey = dateKey(tomorrow.toISOString());
+
+  if (key === todayKey) return 'Today';
+  if (key === tomorrowKey) return 'Tomorrow';
+
+  return date.toLocaleDateString(undefined, {
+    weekday: 'short',
+    month: 'short',
+    day: 'numeric',
+  });
 }
