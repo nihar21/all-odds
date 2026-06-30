@@ -31,7 +31,9 @@ export const resolvers: Resolvers = {
       const events = await oddsApi.getEvents(leagueKey, {
         regions: regionToUpstream[regions ?? Region.Us],
         oddsFormat: oddsFormatToUpstream[oddsFormat ?? OddsFormat.American],
-        markets: marketsToUpstream(markets ?? DEFAULT_MARKETS),
+        // An explicit empty selection (`[]`) is treated as "use the defaults"
+        // rather than sent as an invalid empty `markets=` upstream param.
+        markets: marketsToUpstream(markets?.length ? markets : DEFAULT_MARKETS),
       });
       return events.map(mapEvent);
     },
