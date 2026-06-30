@@ -54,3 +54,5 @@ VITE_ODDS_API_KEY=your_key_here
 Firebase Hosting serves the `dist/all-odds` build output (see `firebase.json`).
 The GitHub Actions workflows run `npm ci && npm run build` and deploy to Firebase
 on PRs (preview channel) and merges to `main` (live).
+
+<!-- CI trigger test 1 (with #30 in main): 2026-06-30T03:46:56Z -->
