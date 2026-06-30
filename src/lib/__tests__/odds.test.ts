@@ -366,10 +366,10 @@ describe('marketSummary', () => {
 describe('formatGameTime / isLive', () => {
   it('formats an ISO timestamp into a day and time', () => {
     const { day, time } = formatGameTime('2026-01-01T18:00:00Z');
-    expect(day).toEqual(expect.any(String));
-    expect(time).toEqual(expect.any(String));
-    expect(day.length).toBeGreaterThan(0);
-    expect(time.length).toBeGreaterThan(0);
+    // Locale/timezone-dependent, so assert shape rather than exact text: this
+    // still catches a day/time field swap or a broken Date (e.g. "Invalid Date").
+    expect(day).toMatch(/^[A-Za-z]{3},\s[A-Za-z]{3}\s\d{1,2}$/);
+    expect(time).toMatch(/^\d{1,2}:\d{2}\s?[AP]M$/i);
   });
 
   it('treats past timestamps as live and future ones as not live', () => {
@@ -378,27 +378,38 @@ describe('formatGameTime / isLive', () => {
   });
 });
 
+// Computed independently of `dateKey` so these tests can actually catch a bug
+// in `dateKey` itself, rather than the bug cancelling out on both sides.
+function localDateKey(date: Date): string {
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, '0');
+  const d = String(date.getDate()).padStart(2, '0');
+  return `${y}-${m}-${d}`;
+}
+
 describe('dateKey / formatDateLabel', () => {
   it('formats an ISO timestamp as a local YYYY-MM-DD key', () => {
-    expect(dateKey('2026-03-15T12:00:00Z')).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+    expect(dateKey('2026-03-15T12:00:00Z')).toBe(
+      localDateKey(new Date('2026-03-15T12:00:00Z')),
+    );
   });
 
   it('labels today as "Today"', () => {
-    const todayKey = dateKey(new Date().toISOString());
+    const todayKey = localDateKey(new Date());
     expect(formatDateLabel(todayKey)).toBe('Today');
   });
 
   it('labels tomorrow as "Tomorrow"', () => {
     const tomorrow = new Date();
     tomorrow.setDate(tomorrow.getDate() + 1);
-    const tomorrowKey = dateKey(tomorrow.toISOString());
+    const tomorrowKey = localDateKey(tomorrow);
     expect(formatDateLabel(tomorrowKey)).toBe('Tomorrow');
   });
 
   it('labels other days with a short weekday/date string', () => {
     const future = new Date();
     future.setDate(future.getDate() + 10);
-    const futureKey = dateKey(future.toISOString());
+    const futureKey = localDateKey(future);
     const label = formatDateLabel(futureKey);
     expect(label).not.toBe('Today');
     expect(label).not.toBe('Tomorrow');

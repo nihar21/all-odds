@@ -1,5 +1,5 @@
-import { afterEach, describe, expect, it, vi } from 'vitest';
-import { ApiError, getAllOdds, getSportsList } from '../api';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { ApiError, clearCache, getAllOdds, getSportsList } from '../api';
 
 function jsonResponse(body: unknown, status = 200): Response {
   return {
@@ -9,7 +9,19 @@ function jsonResponse(body: unknown, status = 200): Response {
   } as Response;
 }
 
+function jsonErrorResponse(status: number, parseError: Error): Response {
+  return {
+    ok: false,
+    status,
+    json: () => Promise.reject(parseError),
+  } as Response;
+}
+
 describe('api', () => {
+  beforeEach(() => {
+    clearCache();
+  });
+
   afterEach(() => {
     vi.unstubAllGlobals();
   });
@@ -28,8 +40,8 @@ describe('api', () => {
     const fetchMock = vi.fn().mockResolvedValue(jsonResponse([{ id: 'evt-1' }]));
     vi.stubGlobal('fetch', fetchMock);
 
-    await getAllOdds('basketball_nba_cache_test');
-    await getAllOdds('basketball_nba_cache_test');
+    await getAllOdds('basketball_nba');
+    await getAllOdds('basketball_nba');
 
     expect(fetchMock).toHaveBeenCalledTimes(1);
   });
@@ -48,13 +60,9 @@ describe('api', () => {
   });
 
   it('falls back to a generic message when the error body has no message', async () => {
-    const fetchMock = vi.fn().mockResolvedValue(
-      {
-        ok: false,
-        status: 500,
-        json: () => Promise.reject(new Error('not json')),
-      } as Response,
-    );
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValue(jsonErrorResponse(500, new Error('not json')));
     vi.stubGlobal('fetch', fetchMock);
 
     await expect(getAllOdds('another_unique_sport_key')).rejects.toThrow(

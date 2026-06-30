@@ -9,6 +9,11 @@ const BASE_URL = 'https://api.the-odds-api.com/v4';
 // same URL won't be re-fetched within a session.
 const cache = new Map<string, unknown>();
 
+/** Test-only escape hatch: resets the in-memory cache between test cases. */
+export function clearCache(): void {
+  cache.clear();
+}
+
 export class ApiError extends Error {
   constructor(
     message: string,

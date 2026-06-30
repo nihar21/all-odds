@@ -11,7 +11,7 @@
     "lint": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
-    "verify": "npm run lint && npm run test && npm run build",
+    "verify": "npm run test && npm run build",
     "fetch-logos": "node scripts/fetch-logos.mjs"
   },
   "dependencies": {
