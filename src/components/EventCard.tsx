@@ -1,6 +1,14 @@
+import { useMemo } from 'react';
 import type { MarketKey, OddsEvent, ScoreEvent } from '../types';
-import { formatGameTime, isLive, marketSummary, teamScore } from '../lib/odds';
+import {
+  bookColumns,
+  formatGameTime,
+  isLive,
+  marketSummary,
+  teamScore,
+} from '../lib/odds';
 import { MARKET_LABELS } from '../constants';
+import { useFavoriteBooks } from '../hooks/useFavoriteBooks';
 import { MarketSelect } from './MarketSelect';
 import { OddsTable } from './OddsTable';
 import { TeamLogo } from './TeamLogo';
@@ -18,7 +26,12 @@ export function EventCard({ event, market, onMarketChange, score }: EventCardPro
   const live = isLive(event.commence_time);
   const completed = score?.completed ?? false;
   const summary = marketSummary(event, market);
-  const bookCount = event.bookmakers.length;
+  const { favorites } = useFavoriteBooks();
+  // Count the books actually shown so the header matches the filtered table.
+  const bookCount = useMemo(
+    () => bookColumns(event, favorites).length,
+    [event, favorites],
+  );
 
   const awayScore = teamScore(score, event.away_team);
   const homeScore = teamScore(score, event.home_team);
@@ -66,8 +79,9 @@ export function EventCard({ event, market, onMarketChange, score }: EventCardPro
             )}
           </h3>
           <p className="mt-0.5 text-xs text-slate-500">
-            {bookCount} sportsbook{bookCount === 1 ? '' : 's'} · best price
-            highlighted
+            {bookCount === 0
+              ? 'No favorite sportsbooks with odds'
+              : `${bookCount} sportsbook${bookCount === 1 ? '' : 's'} · best price highlighted`}
           </p>
         </div>
         <div className="shrink-0">
