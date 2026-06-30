@@ -62,7 +62,7 @@ export function EventCard({ event, market, onMarketChange, score }: EventCardPro
             )}
           </div>
           <h3 className="flex min-w-0 items-center gap-2 font-display text-lg font-semibold text-white">
-            <TeamLogo team={event.away_team} size={24} />
+            <TeamLogo team={event.away_team} sportKey={event.sport_key} size={24} />
             <span className="truncate">{event.away_team ?? 'Away'}</span>
             {awayScore !== null && (
               <span className="shrink-0 font-mono font-bold text-slate-300">
@@ -70,7 +70,7 @@ export function EventCard({ event, market, onMarketChange, score }: EventCardPro
               </span>
             )}
             <span className="shrink-0 text-slate-500">@</span>
-            <TeamLogo team={event.home_team} size={24} />
+            <TeamLogo team={event.home_team} sportKey={event.sport_key} size={24} />
             <span className="truncate">{event.home_team ?? 'Home'}</span>
             {homeScore !== null && (
               <span className="shrink-0 font-mono font-bold text-slate-300">
