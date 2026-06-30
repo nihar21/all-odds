@@ -9,6 +9,7 @@ import {
   rowsForMarket,
 } from '../lib/odds';
 import { useFavoriteBooks } from '../hooks/useFavoriteBooks';
+import { sportsbookUrl } from '../lib/sportsbookLinks';
 
 interface OddsTableProps {
   event: OddsEvent;
@@ -89,6 +90,28 @@ export function OddsTable({ event, market }: OddsTableProps) {
                 const isBest = best[ri].has(col.key) && !!outcome;
                 const price = outcome?.price ?? null;
                 const showPoint = market !== 'h2h' && outcome?.point !== undefined;
+                const url = outcome ? sportsbookUrl(col.key) : null;
+                const cellClassName = `mx-auto flex min-w-[3.75rem] flex-col items-center rounded-lg px-2 py-1.5 leading-tight transition ${
+                  isBest
+                    ? 'bg-accent/15 ring-1 ring-accent/60'
+                    : 'hover:bg-white/5'
+                }`;
+                const cellContent = (
+                  <>
+                    {showPoint && (
+                      <span className="font-mono text-[11px] text-slate-400">
+                        {formatPoint(outcome!.point)}
+                      </span>
+                    )}
+                    <span
+                      className={`font-mono font-semibold ${
+                        isBest ? 'text-accent-soft' : 'text-slate-100'
+                      }`}
+                    >
+                      {formatPrice(price)}
+                    </span>
+                  </>
+                );
 
                 return (
                   <td
@@ -96,26 +119,19 @@ export function OddsTable({ event, market }: OddsTableProps) {
                     className="border-b border-white/5 px-2 py-2 text-center align-middle"
                   >
                     {outcome ? (
-                      <div
-                        className={`mx-auto flex min-w-[3.75rem] flex-col items-center rounded-lg px-2 py-1.5 leading-tight transition ${
-                          isBest
-                            ? 'bg-accent/15 ring-1 ring-accent/60'
-                            : 'hover:bg-white/5'
-                        }`}
-                      >
-                        {showPoint && (
-                          <span className="font-mono text-[11px] text-slate-400">
-                            {formatPoint(outcome.point)}
-                          </span>
-                        )}
-                        <span
-                          className={`font-mono font-semibold ${
-                            isBest ? 'text-accent-soft' : 'text-slate-100'
-                          }`}
+                      url ? (
+                        <a
+                          href={url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          aria-label={`Bet ${row.label} at ${col.title}`}
+                          className={`${cellClassName} cursor-pointer`}
                         >
-                          {formatPrice(price)}
-                        </span>
-                      </div>
+                          {cellContent}
+                        </a>
+                      ) : (
+                        <div className={cellClassName}>{cellContent}</div>
+                      )
                     ) : (
                       <span className="text-slate-600">—</span>
                     )}
