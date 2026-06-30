@@ -64,6 +64,7 @@ export function SportsMenu() {
         <Dialog className="outline-none" aria-label="Browse sports">
           <Link
             to="/live"
+            onClick={() => setIsOpen(false)}
             className="flex items-center gap-2.5 border-b border-white/10 px-4 py-3 text-sm font-semibold text-rose-200 outline-none transition hover:bg-rose-500/10 focus-visible:bg-rose-500/10"
           >
             <span className="relative flex h-2 w-2">
@@ -101,6 +102,7 @@ export function SportsMenu() {
                 <li key={g.group}>
                   <Link
                     to={`/sport/${encodeURIComponent(g.group)}`}
+                    onClick={() => setIsOpen(false)}
                     className="flex items-center justify-between gap-3 rounded-lg px-3 py-2 text-sm text-slate-200 outline-none transition hover:bg-white/10 focus-visible:bg-white/10"
                   >
                     <span className="flex items-center gap-2.5">
