@@ -63,7 +63,10 @@ export interface ScoreEvent {
   last_update: string | null;
 }
 
-export type MarketKey = 'h2h' | 'spreads' | 'totals';
+// Game markets are h2h/spreads/totals; `outrights` is the futures/"winner"
+// market used by tournament & event-winner sports (golf, politics, …), which
+// have no home/away teams — just a field of competitors. See OutrightCard.
+export type MarketKey = 'h2h' | 'spreads' | 'totals' | 'outrights';
 
 export type Region = 'uk' | 'us' | 'us2' | 'eu' | 'au';
 export type OddsFormat = 'decimal' | 'american';

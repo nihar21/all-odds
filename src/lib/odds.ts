@@ -74,7 +74,32 @@ export function drawOutcomeName(event: OddsEvent): string | null {
   return null;
 }
 
+/**
+ * Rows for an outright/futures market: one per competitor, ordered favorites
+ * first. Competitors come from the union of every book's `outrights` outcomes
+ * (books don't always list the same field). "Favorite" is ranked by each
+ * competitor's most favorable American price across books — the shortest odds
+ * (e.g. -150) sort ahead of longshots (e.g. +6000).
+ */
+export function outrightRows(event: OddsEvent): OddsRow[] {
+  const bestPrice = new Map<string, number>();
+  for (const book of event.bookmakers) {
+    const market = book.markets.find((m) => m.key === 'outrights');
+    for (const outcome of market?.outcomes ?? []) {
+      const current = bestPrice.get(outcome.name);
+      if (current === undefined || outcome.price > current) {
+        bestPrice.set(outcome.name, outcome.price);
+      }
+    }
+  }
+  return Array.from(bestPrice.keys())
+    .sort((a, b) => bestPrice.get(a)! - bestPrice.get(b)!)
+    .map((name) => ({ outcomeName: name, label: name }));
+}
+
 export function rowsForMarket(event: OddsEvent, market: MarketKey): OddsRow[] {
+  if (market === 'outrights') return outrightRows(event);
+
   const away = event.away_team ?? 'Away';
   const home = event.home_team ?? 'Home';
 

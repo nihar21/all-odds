@@ -63,11 +63,15 @@ export function getAllOdds(
   {
     regions = 'us',
     oddsFormat = 'american',
-  }: { regions?: Region; oddsFormat?: OddsFormat } = {},
+    // Comma-separated market keys. Defaults to the head-to-head game markets;
+    // outright/futures sports (golf, politics, …) must pass `markets: 'outrights'`
+    // since they don't offer h2h/spreads/totals.
+    markets = 'h2h,spreads,totals',
+  }: { regions?: Region; oddsFormat?: OddsFormat; markets?: string } = {},
 ): Promise<OddsEvent[]> {
   const url =
     `${BASE_URL}/sports/${sportKey}/odds/` +
-    `?apiKey=${API_KEY}&regions=${regions}&oddsFormat=${oddsFormat}&markets=h2h,spreads,totals`;
+    `?apiKey=${API_KEY}&regions=${regions}&oddsFormat=${oddsFormat}&markets=${markets}`;
   return cachedGet<OddsEvent[]>(url);
 }
 
