@@ -40,6 +40,29 @@ export interface OddsEvent {
   bookmakers: Bookmaker[];
 }
 
+/** One team's score within a `ScoreEvent` (from the v4 `/scores` endpoint). */
+export interface ScoreEntry {
+  name: string;
+  score: string;
+}
+
+/**
+ * A game from the the-odds-api v4 `/scores` endpoint. The `id` matches the
+ * corresponding odds event `id`, so scores can be joined to displayed events.
+ * `scores` is null/empty until the event starts; `completed` flags a final.
+ */
+export interface ScoreEvent {
+  id: string;
+  sport_key: string;
+  sport_title: string;
+  commence_time: string;
+  completed: boolean;
+  home_team?: string;
+  away_team?: string;
+  scores: ScoreEntry[] | null;
+  last_update: string | null;
+}
+
 // Game markets are h2h/spreads/totals; `outrights` is the futures/"winner"
 // market used by tournament & event-winner sports (golf, politics, …), which
 // have no home/away teams — just a field of competitors. See OutrightCard.

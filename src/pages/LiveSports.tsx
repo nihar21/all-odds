@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
 import { getUpcomingOdds } from '../lib/api';
 import { useAsync } from '../hooks/useAsync';
+import { useLiveScores } from '../hooks/useLiveScores';
 import { isLive } from '../lib/odds';
 import type { MarketKey, OddsEvent } from '../types';
 import { Breadcrumbs } from '../components/Breadcrumbs';
@@ -15,10 +16,11 @@ interface SportGroup {
 }
 
 export function LiveSports() {
-  // Live data is served from the session cache (see `cachedGet` in lib/api),
-  // so this view reflects a snapshot from first load and does not auto-refresh
-  // — a deliberate tradeoff to conserve the public odds API's limited credits.
-  // Reload the page to fetch the latest live games.
+  // Odds data is served from the session cache (see `cachedGet` in lib/api), so
+  // the list of live games reflects a snapshot from first load and does not
+  // auto-refresh — a deliberate tradeoff to conserve odds-API credits. Reload to
+  // fetch newly-started games. (Live scores, fetched separately below via
+  // `useLiveScores`, DO auto-refresh on a ~30s poll.)
   const { data, loading, error } = useAsync(() => getUpcomingOdds(), []);
 
   // Only games already in progress, grouped by sport and sorted by start time.
@@ -48,6 +50,21 @@ export function LiveSports() {
     () => groups.reduce((sum, g) => sum + g.events.length, 0),
     [groups],
   );
+
+  // Distinct sport keys among the live events. The cross-sport `upcoming` key is
+  // NOT valid for the /scores endpoint, so we poll each live sport individually.
+  const liveSportKeys = useMemo(() => {
+    const keys = new Set<string>();
+    for (const group of groups) {
+      for (const event of group.events) {
+        if (event.sport_key) keys.add(event.sport_key);
+      }
+    }
+    return Array.from(keys);
+  }, [groups]);
+
+  // Live games only here, so no daysFrom — keeps quota down (these are in-play).
+  const scores = useLiveScores(liveSportKeys, { enabled: liveCount > 0 });
 
   // Master market drives all events; per-event overrides are tracked separately.
   const [master, setMaster] = useState<MarketKey>('h2h');
@@ -121,6 +138,7 @@ export function LiveSports() {
                     onMarketChange={(m) =>
                       setPerEvent((prev) => ({ ...prev, [event.id]: m }))
                     }
+                    score={scores.get(event.id)}
                   />
                 ))}
               </div>

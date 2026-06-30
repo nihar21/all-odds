@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { getAllOdds, getSportsList } from '../lib/api';
 import { useAsync } from '../hooks/useAsync';
+import { useLiveScores } from '../hooks/useLiveScores';
 import type { MarketKey, OddsEvent } from '../types';
 import { Breadcrumbs } from '../components/Breadcrumbs';
 import { EventListSkeleton } from '../components/Skeleton';
@@ -48,6 +49,25 @@ export function LeagueDetails() {
   }, [data]);
 
   const leagueTitle = events[0]?.sport_title ?? leagueKey;
+
+  // Poll scores for this sport when a game is in progress OR recently started,
+  // to conserve API quota while still surfacing finals after the last game ends
+  // (gating strictly on `isLive` would drop just-completed finals immediately).
+  // `daysFrom: 1` returns recently-completed games. `leagueKey` is the concrete
+  // sport key here.
+  const shouldPollScores = useMemo(() => {
+    // ~6h covers an in-progress game plus a post-game window for finals.
+    const windowMs = 6 * 60 * 60 * 1000;
+    const now = Date.now();
+    return events.some((e) => {
+      const start = new Date(e.commence_time).getTime();
+      return start <= now && now - start <= windowMs;
+    });
+  }, [events]);
+  const scores = useLiveScores(shouldPollScores ? [leagueKey] : [], {
+    enabled: shouldPollScores,
+    daysFrom: 1,
+  });
 
   // Distinct local days that actually have events, in chronological order.
   // `events` is already sorted by commence_time, so first-seen order is sorted.
@@ -171,6 +191,7 @@ export function LeagueDetails() {
                 onMarketChange={(m) =>
                   setPerEvent((prev) => ({ ...prev, [event.id]: m }))
                 }
+                score={scores.get(event.id)}
               />
             ),
           )}

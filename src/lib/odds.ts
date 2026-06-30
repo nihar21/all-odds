@@ -1,4 +1,4 @@
-import type { MarketKey, OddsEvent, Outcome } from '../types';
+import type { MarketKey, OddsEvent, Outcome, ScoreEvent } from '../types';
 import { BOOKMAKERS, BOOKMAKER_TITLES } from '../constants';
 
 /** Format an American price: +150, -110, or an em dash when missing. */
@@ -252,6 +252,20 @@ export function formatGameTime(iso: string): { day: string; time: string } {
 
 export function isLive(iso: string): boolean {
   return new Date(iso).getTime() <= Date.now();
+}
+
+/**
+ * The score string for a given team within a `ScoreEvent`, matched by team name
+ * (the `/scores` payload keys scores by `name`). Returns null when there's no
+ * score event, no team, or no matching entry yet (scores are empty pre-game).
+ */
+export function teamScore(
+  score: ScoreEvent | undefined,
+  team: string | undefined,
+): string | null {
+  if (!score?.scores || !team) return null;
+  const entry = score.scores.find((s) => s.name === team);
+  return entry?.score ?? null;
 }
 
 /**
