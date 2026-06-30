@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
 import { Link, Outlet, useLocation } from 'react-router-dom';
+import { SportsMenu } from './SportsMenu';
 
 interface LayoutProps {
   children?: ReactNode;
@@ -12,29 +13,32 @@ export function Layout({ children }: LayoutProps) {
     <div className="flex min-h-full flex-col">
       <header className="sticky top-0 z-30 border-b border-white/10 bg-ink-950/80 backdrop-blur-md">
         <div className="mx-auto flex h-16 w-full max-w-6xl items-center justify-between px-4 sm:px-6">
-          <Link
-            to="/"
-            className="group flex items-center gap-2.5 rounded-lg px-1 py-1 transition"
-          >
-            <span className="grid h-9 w-9 place-items-center rounded-xl bg-gradient-to-br from-accent to-accent-deep text-ink-950 shadow-glow">
-              <svg
-                viewBox="0 0 24 24"
-                className="h-5 w-5"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth={2.2}
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                aria-hidden="true"
-              >
-                <path d="M3 17l5-5 4 4 8-8" />
-                <path d="M16 8h5v5" />
-              </svg>
-            </span>
-            <span className="font-display text-lg font-bold tracking-tight text-white">
-              All<span className="text-accent">Odds</span>
-            </span>
-          </Link>
+          <div className="flex items-center gap-1.5">
+            <SportsMenu />
+            <Link
+              to="/"
+              className="group flex items-center gap-2.5 rounded-lg px-1 py-1 transition"
+            >
+              <span className="grid h-9 w-9 place-items-center rounded-xl bg-gradient-to-br from-accent to-accent-deep text-ink-950 shadow-glow">
+                <svg
+                  viewBox="0 0 24 24"
+                  className="h-5 w-5"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth={2.2}
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  aria-hidden="true"
+                >
+                  <path d="M3 17l5-5 4 4 8-8" />
+                  <path d="M16 8h5v5" />
+                </svg>
+              </span>
+              <span className="font-display text-lg font-bold tracking-tight text-white">
+                All<span className="text-accent">Odds</span>
+              </span>
+            </Link>
+          </div>
 
           <nav aria-label="Primary" className="flex items-center gap-1 text-sm">
             <Link
