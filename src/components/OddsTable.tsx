@@ -34,8 +34,15 @@ export function OddsTable({ event, market }: OddsTableProps) {
   );
   const live = isLive(event.commence_time);
   const updated = useMemo(
-    () => (live ? latestMarketUpdate(event, market) : null),
-    [live, event, market],
+    () =>
+      live
+        ? latestMarketUpdate(
+            event,
+            market,
+            new Set(columns.map((col) => col.key)),
+          )
+        : null,
+    [live, event, market, columns],
   );
 
   if (columns.length === 0) {

@@ -255,17 +255,23 @@ export function isLive(iso: string): boolean {
 }
 
 /**
- * The most recent `last_update` timestamp across every bookmaker's posting of
- * `market` for this event, or null if no book carries that market. Surfaces
- * how fresh the *live* odds are, since (per the in-memory, no-TTL response
- * cache in `lib/api.ts`) the table itself does not auto-refresh mid-session.
+ * The most recent `last_update` timestamp across `bookKeys`' postings of
+ * `market` for this event, or null if none carry that market. Surfaces how
+ * fresh the *live* odds are, since (per the in-memory, no-TTL response cache
+ * in `lib/api.ts`) the table itself does not auto-refresh mid-session.
+ *
+ * `bookKeys` should match whatever books are actually rendered (e.g. the
+ * caller's `bookColumns(event, favorites)` output) — otherwise the freshness
+ * shown can come from a book the user isn't even seeing odds for.
  */
 export function latestMarketUpdate(
   event: OddsEvent,
   market: MarketKey,
+  bookKeys: ReadonlySet<string>,
 ): string | null {
   let latest: string | null = null;
   for (const book of event.bookmakers) {
+    if (!bookKeys.has(book.key)) continue;
     const m = book.markets.find((mkt) => mkt.key === market);
     if (!m?.last_update) continue;
     if (!latest || new Date(m.last_update).getTime() > new Date(latest).getTime()) {
