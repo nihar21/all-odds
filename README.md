@@ -49,6 +49,32 @@ fallback to the project's existing key. To use your own key, create a `.env`:
 VITE_ODDS_API_KEY=your_key_here
 ```
 
+## GraphQL backend (optional)
+
+A standalone **Node + TypeScript + Apollo Server** backend lives in
+[`server/`](./server). It's the start of a single typed API surface that proxies
+the third-party data sources server-side (keys off the client, plus caching and
+rate-limit handling). It's **optional** — by default the app stays client-only
+and calls the-odds-api directly.
+
+To run the app against the backend (a vertical slice — the sports/leagues list
+is served via GraphQL):
+
+```bash
+# terminal 1 — backend
+cd server && npm install && npm run dev      # http://localhost:4000/
+
+# terminal 2 — front-end (repo root)
+echo "VITE_GRAPHQL_URL=http://localhost:4000/" >> .env
+npm run dev
+```
+
+When `VITE_GRAPHQL_URL` is unset (the default, including the deployed build), the
+front-end calls the-odds-api directly as before. The GraphQL schema in
+`server/src/schema.graphql` is the single source of truth: `npm run codegen`
+(root **and** `server/`) regenerates shared TypeScript types from it. See
+[`server/README.md`](./server/README.md) for full details.
+
 ## Deployment
 
 Firebase Hosting serves the `dist/all-odds` build output (see `firebase.json`).

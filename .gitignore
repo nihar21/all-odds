@@ -11,6 +11,10 @@
 npm-debug.log
 yarn-error.log
 
+# Backend (server/) build output & deps
+/server/node_modules
+/server/dist
+
 # Build artifacts
 *.tsbuildinfo
 

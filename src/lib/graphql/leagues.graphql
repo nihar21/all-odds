@@ -1,0 +1,12 @@
+# Sports/leagues list served by the GraphQL backend. Mirrors the fields the
+# front-end's `Sport` type needs from the-odds-api `/sports` response.
+query Leagues($activeOnly: Boolean) {
+  leagues(activeOnly: $activeOnly) {
+    key
+    group
+    title
+    description
+    active
+    hasOutrights
+  }
+}
