@@ -19,7 +19,17 @@ export interface BookColumn {
   title: string;
 }
 
-export function bookColumns(event: OddsEvent): BookColumn[] {
+/**
+ * The bookmaker columns to render for an event, in our preferred order.
+ *
+ * When `favorites` is provided and non-empty, the columns are filtered to the
+ * user's favorited books (the rest are hidden). An empty/omitted set means
+ * "no preference" and returns every book present (the default behavior).
+ */
+export function bookColumns(
+  event: OddsEvent,
+  favorites?: ReadonlySet<string>,
+): BookColumn[] {
   const present = new Set(event.bookmakers.map((b) => b.key));
   const ordered = BOOKMAKERS.filter((b) => present.has(b.key)).map((b) => ({
     key: b.key,
@@ -31,6 +41,9 @@ export function bookColumns(event: OddsEvent): BookColumn[] {
     if (!known.has(b.key)) {
       ordered.push({ key: b.key, title: BOOKMAKER_TITLES[b.key] ?? b.title });
     }
+  }
+  if (favorites && favorites.size > 0) {
+    return ordered.filter((b) => favorites.has(b.key));
   }
   return ordered;
 }

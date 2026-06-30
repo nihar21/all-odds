@@ -7,6 +7,7 @@ import { Breadcrumbs } from '../components/Breadcrumbs';
 import { EventListSkeleton } from '../components/Skeleton';
 import { ErrorView } from '../components/ErrorView';
 import { MarketSelect } from '../components/MarketSelect';
+import { BookFilter } from '../components/BookFilter';
 import { DatePicker, ALL_DAYS } from '../components/DatePicker';
 import { EventCard } from '../components/EventCard';
 import { OutrightCard } from '../components/OutrightCard';
@@ -111,20 +112,25 @@ export function LeagueDetails() {
                 : `${visibleEvents.length} upcoming ${visibleEvents.length === 1 ? 'matchup' : 'matchups'}`}
           </p>
         </div>
-        {!loading && !error && !outright && events.length > 0 && (
+        {!loading && !error && events.length > 0 && (
           <div className="flex flex-wrap items-end gap-3">
-            <DatePicker
-              dates={dates}
-              value={selectedDate}
-              onChange={setSelectedDate}
-              label="Date"
-            />
-            <MarketSelect
-              value={master}
-              onChange={handleMasterChange}
-              label="Market"
-              size="md"
-            />
+            <BookFilter label="Sportsbooks" size="md" />
+            {!outright && (
+              <>
+                <DatePicker
+                  dates={dates}
+                  value={selectedDate}
+                  onChange={setSelectedDate}
+                  label="Date"
+                />
+                <MarketSelect
+                  value={master}
+                  onChange={handleMasterChange}
+                  label="Market"
+                  size="md"
+                />
+              </>
+            )}
           </div>
         )}
       </div>
