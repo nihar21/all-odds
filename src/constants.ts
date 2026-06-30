@@ -21,21 +21,21 @@ export const MARKET_DESCRIPTIONS: Record<MarketKey, string> = {
 // Preferred ordering + display titles for sportsbooks. Columns are derived from
 // the books actually present in an event, ordered by this list.
 export const BOOKMAKERS: BookmakerInfo[] = [
-  { key: 'fanduel', title: 'FanDuel' },
-  { key: 'draftkings', title: 'DraftKings' },
-  { key: 'betmgm', title: 'BetMGM' },
-  { key: 'williamhill_us', title: 'Caesars' },
-  { key: 'pointsbetus', title: 'PointsBet' },
-  { key: 'betrivers', title: 'BetRivers' },
-  { key: 'superbook', title: 'SuperBook' },
-  { key: 'unibet_us', title: 'Unibet' },
-  { key: 'twinspires', title: 'TwinSpires' },
-  { key: 'barstool', title: 'Barstool' },
-  { key: 'betus', title: 'BetUS' },
-  { key: 'bovada', title: 'Bovada' },
-  { key: 'betonlineag', title: 'BetOnline.ag' },
-  { key: 'lowvig', title: 'LowVig.ag' },
-  { key: 'mybookieag', title: 'MyBookie.ag' },
+  { key: 'fanduel', title: 'FanDuel', url: 'https://sportsbook.fanduel.com' },
+  { key: 'draftkings', title: 'DraftKings', url: 'https://sportsbook.draftkings.com' },
+  { key: 'betmgm', title: 'BetMGM', url: 'https://sports.betmgm.com' },
+  { key: 'williamhill_us', title: 'Caesars', url: 'https://www.caesars.com/sportsbook-and-casino' },
+  { key: 'pointsbetus', title: 'PointsBet', url: 'https://pointsbet.com' },
+  { key: 'betrivers', title: 'BetRivers', url: 'https://www.betrivers.com' },
+  { key: 'superbook', title: 'SuperBook', url: 'https://www.superbook.com' },
+  { key: 'unibet_us', title: 'Unibet', url: 'https://unibet.com' },
+  { key: 'twinspires', title: 'TwinSpires', url: 'https://www.twinspires.com' },
+  { key: 'barstool', title: 'Barstool', url: 'https://www.espnbet.com' },
+  { key: 'betus', title: 'BetUS', url: 'https://www.betus.com.pa' },
+  { key: 'bovada', title: 'Bovada', url: 'https://www.bovada.lv' },
+  { key: 'betonlineag', title: 'BetOnline.ag', url: 'https://www.betonline.ag' },
+  { key: 'lowvig', title: 'LowVig.ag', url: 'https://www.lowvig.ag' },
+  { key: 'mybookieag', title: 'MyBookie.ag', url: 'https://www.mybookie.ag' },
 ];
 
 export const BOOKMAKER_TITLES: Record<string, string> = Object.fromEntries(

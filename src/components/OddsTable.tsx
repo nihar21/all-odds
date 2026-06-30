@@ -9,7 +9,6 @@ import {
   rowsForMarket,
 } from '../lib/odds';
 import { useFavoriteBooks } from '../hooks/useFavoriteBooks';
-import { sportsbookUrl } from '../lib/sportsbookLinks';
 
 interface OddsTableProps {
   event: OddsEvent;
@@ -90,7 +89,7 @@ export function OddsTable({ event, market }: OddsTableProps) {
                 const isBest = best[ri].has(col.key) && !!outcome;
                 const price = outcome?.price ?? null;
                 const showPoint = market !== 'h2h' && outcome?.point !== undefined;
-                const url = outcome ? sportsbookUrl(col.key) : null;
+                const url = outcome ? col.url ?? null : null;
                 const cellClassName = `mx-auto flex min-w-[3.75rem] flex-col items-center rounded-lg px-2 py-1.5 leading-tight transition ${
                   isBest
                     ? 'bg-accent/15 ring-1 ring-accent/60'

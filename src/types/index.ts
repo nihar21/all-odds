@@ -74,4 +74,6 @@ export type OddsFormat = 'decimal' | 'american';
 export interface BookmakerInfo {
   key: string;
   title: string;
+  /** Public web URL for the sportsbook, if known. Omitted for books we don't have a link for. */
+  url?: string;
 }
