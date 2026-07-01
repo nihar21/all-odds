@@ -1,4 +1,6 @@
 import type { OddsEvent, OddsFormat, Region, ScoreEvent, Sport } from '../types';
+import { BACKEND_ENABLED } from './graphql/client';
+import { getLeaguesViaGraphql } from './graphql/leagues';
 
 // The odds-API key is necessarily public in a client-only app. Allow overriding
 // via a Vite env var, falling back to the project's existing key.
@@ -60,6 +62,12 @@ async function cachedGet<T>(url: string): Promise<T> {
 }
 
 export function getSportsList(): Promise<Sport[]> {
+  // Vertical slice: when a GraphQL backend is configured, the sports/leagues
+  // list is served by it (keys off the client) instead of calling the-odds-api
+  // directly. All other data paths still go direct until they're migrated.
+  if (BACKEND_ENABLED) {
+    return getLeaguesViaGraphql();
+  }
   return cachedGet<Sport[]>(`${BASE_URL}/sports/?apiKey=${API_KEY}`);
 }
 

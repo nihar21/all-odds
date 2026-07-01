@@ -1,0 +1,124 @@
+"""
+AllOdds GraphQL schema.
+
+This is the single API contract the React front-end talks to. Resolvers proxy
+and normalize upstream data sources (currently the-odds-api; ESPN team/logo data
+and historical odds are planned — see issues #16 and #13) so the client never
+calls third-party APIs (or holds their keys) directly.
+"""
+
+schema {
+  query: Query
+}
+
+type Query {
+  "All sports/leagues known to the upstream provider (active and inactive)."
+  leagues(activeOnly: Boolean = false): [League!]!
+
+  "A single league by its provider key (e.g. \"basketball_nba\"), or null if unknown."
+  league(key: ID!): League
+
+  """
+  Odds events for a league. Pass the special key \"upcoming\" for a bounded
+  cross-sport set of live + next-to-start games.
+  """
+  events(
+    leagueKey: ID!
+    regions: Region = US
+    oddsFormat: OddsFormat = AMERICAN
+    markets: [MarketKey!] = [H2H, SPREADS, TOTALS]
+  ): [Event!]!
+
+  "Live + recently-completed scores for a league (one concrete league key; not \"upcoming\")."
+  liveScores(leagueKey: ID!, daysFrom: Int): [LiveScore!]!
+}
+
+"A sport/league offered by the odds provider (e.g. NBA, EPL)."
+type League {
+  key: ID!
+  group: String!
+  title: String!
+  description: String!
+  active: Boolean!
+  hasOutrights: Boolean!
+}
+
+"A team participating in an event. Logo enrichment (ESPN) is planned — see #16."
+type Team {
+  name: String!
+  "Absolute URL to the team's logo, when known. Null until logo enrichment lands."
+  logoUrl: String
+}
+
+"A single matchup with bookmaker odds."
+type Event {
+  id: ID!
+  leagueKey: ID!
+  leagueTitle: String!
+  commenceTime: String!
+  home: Team
+  away: Team
+  hasOutrights: Boolean!
+  bookmakers: [Bookmaker!]!
+}
+
+type Bookmaker {
+  key: String!
+  title: String!
+  lastUpdate: String!
+  markets: [Market!]!
+}
+
+type Market {
+  key: MarketKey!
+  lastUpdate: String!
+  outcomes: [Outcome!]!
+}
+
+type Outcome {
+  name: String!
+  "Price in the requested odds format (American by default)."
+  price: Float!
+  "Spread/total line, when applicable."
+  point: Float
+  "Competitor name for outright/futures markets."
+  description: String
+}
+
+"Live or final score for an event. `id` matches the corresponding Event.id."
+type LiveScore {
+  id: ID!
+  leagueKey: ID!
+  leagueTitle: String!
+  commenceTime: String!
+  completed: Boolean!
+  home: Team
+  away: Team
+  scores: [ScoreEntry!]!
+  lastUpdate: String
+}
+
+type ScoreEntry {
+  name: String!
+  score: String!
+}
+
+enum MarketKey {
+  H2H
+  SPREADS
+  TOTALS
+  OUTRIGHTS
+}
+
+enum Region {
+  UK
+  US
+  US2
+  EU
+  AU
+}
+
+enum OddsFormat {
+  DECIMAL
+  AMERICAN
+}

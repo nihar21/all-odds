@@ -22,6 +22,26 @@ live view.
   `formatPrice`, `bookColumns`, `rowsForMarket`, `bestBooksForRow`, …).
 - `src/constants.ts` — bookmaker order & titles, sport icons, market labels.
 - `src/types/index.ts` — the-odds-api response shapes.
+- `src/lib/graphql/` — optional GraphQL backend integration: `client.ts`
+  (Apollo Client + `BACKEND_ENABLED` flag), `*.graphql` operations, and the
+  committed codegen output `generated.ts`.
+- `server/` — **separate** Node + TypeScript + Apollo Server backend (own
+  `package.json`, not part of the Firebase build). Proxies the-odds-api behind a
+  typed GraphQL schema with server-side caching + rate-limit handling. See
+  `server/README.md`.
+
+## Backend (optional GraphQL layer)
+- The app is **client-only by default**. When `VITE_GRAPHQL_URL` is set, feature
+  loaders that have been migrated (currently only `getSportsList`) source data
+  from the `server/` GraphQL backend instead of calling the-odds-api directly;
+  unset, behavior is unchanged (so the deployed build is unaffected).
+- `server/src/schema.graphql` is the single source of truth. Both the root app
+  and `server/` run `npm run codegen` against it to regenerate shared TS types
+  (`src/lib/graphql/generated.ts` and `server/src/generated/graphql.ts`). The
+  generated files are committed so builds never depend on codegen running.
+- To migrate another feature: add a `.graphql` operation under `src/lib/graphql/`,
+  run codegen, and branch on `BACKEND_ENABLED` in its loader (mirror
+  `getSportsList`). Add the matching resolver in `server/src/resolvers/`.
 
 ## Conventions & gotchas
 - Fetch data with the `useAsync(loader, deps)` hook and render explicit
