@@ -52,7 +52,10 @@ export function fuzzyScore(query: string, target: string): number | null {
       else {
         const dist = levenshtein(qt, tt);
         const maxLen = Math.max(qt.length, tt.length);
-        if (maxLen >= 3 && dist <= Math.max(1, Math.floor(maxLen / 4))) {
+        // Require at least 6 characters before tolerating a 1-edit typo —
+        // shorter tokens (e.g. "jets"/"Nets", "rays"/"Rams") are too close
+        // together in edit-distance terms for a 1-edit match to be meaningful.
+        if (maxLen >= 6 && dist <= Math.max(1, Math.floor(maxLen / 4))) {
           best = Math.max(best, 40 - dist * 5);
         }
       }

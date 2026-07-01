@@ -37,7 +37,14 @@ function dateLabel(d: Date): string {
   return `${WEEKDAY_LONG[d.getUTCDay()].slice(0, 3)}, ${MONTH_SHORT[d.getUTCMonth()]} ${d.getUTCDate()}`;
 }
 
-/** Query terms a date can be matched against, including "today"/"tomorrow". */
+/**
+ * Query terms a date can be matched against, including "today"/"tomorrow".
+ * "today"/"tomorrow" are computed from UTC calendar days, not the searching
+ * user's local day — the server has no client timezone context — so a US
+ * evening game can occasionally be tagged "tomorrow" (or drop out of both)
+ * right around the UTC-day rollover. The ISO/weekday/month-day terms below
+ * are unaffected since they're derived straight from the event's own instant.
+ */
 function dateSearchTerms(d: Date, now: Date): string[] {
   const terms = [
     isoDate(d),
@@ -69,68 +76,37 @@ function topHits(hits: { hit: SearchHit; score: number }[]): SearchHit[] {
     .map((h) => h.hit);
 }
 
+// Matches the upstream markets string `marketsToUpstream(DEFAULT_MARKETS)`
+// produces in resolvers/index.ts (see mappers.ts) so this request shares the
+// events resolver's TTL cache entry for the same "upcoming" window instead of
+// fragmenting into a second real upstream request — search only reads team
+// names/dates, not odds, so any markets value would work functionally.
+const UPCOMING_MARKETS = 'h2h,spreads,totals';
+
 /**
- * Builds the global-search result list for `query`: sports/leagues from the
- * full leagues list, teams/dates from the bounded "upcoming" event set (the
- * same cross-sport window `events(leagueKey: "upcoming")` already serves).
+ * Builds the global-search result list for `query`: teams/dates from the
+ * bounded "upcoming" event set (the same cross-sport window
+ * `events(leagueKey: "upcoming")` already serves). Sports/leagues are matched
+ * client-side instead (against the already-cached leagues list, see
+ * `searchSportsAndLeagues` in the front-end's `src/lib/search.ts`), so this
+ * resolver doesn't spend work on categories nothing here consumes.
  */
 export async function search(query: string, oddsApi: OddsApi): Promise<SearchHit[]> {
-  const [leagues, events] = await Promise.all([
+  const [leaguesResult, eventsResult] = await Promise.allSettled([
     oddsApi.getLeagues(false),
     oddsApi.getEvents('upcoming', {
       regions: 'us',
       oddsFormat: 'american',
-      markets: 'h2h',
+      markets: UPCOMING_MARKETS,
     }),
   ]);
 
-  return [
-    ...searchSports(query, leagues),
-    ...searchLeagues(query, leagues),
-    ...searchTeams(query, events, leagues),
-    ...searchDates(query, events),
-  ];
-}
+  // Degrade gracefully: a failure fetching one (e.g. rate-limited) shouldn't
+  // block results derived from the other.
+  const leagues = leaguesResult.status === 'fulfilled' ? leaguesResult.value : [];
+  const events = eventsResult.status === 'fulfilled' ? eventsResult.value : [];
 
-function searchSports(query: string, leagues: RawSport[]): SearchHit[] {
-  const seen = new Set<string>();
-  const scored: { hit: SearchHit; score: number }[] = [];
-  for (const l of leagues) {
-    if (!l.group || seen.has(l.group)) continue;
-    seen.add(l.group);
-    const score = fuzzyScore(query, l.group);
-    if (score === null) continue;
-    scored.push({
-      score,
-      hit: {
-        category: SearchCategory.Sport,
-        label: l.group,
-        subtitle: null,
-        sportGroup: l.group,
-        leagueKey: null,
-      },
-    });
-  }
-  return topHits(scored);
-}
-
-function searchLeagues(query: string, leagues: RawSport[]): SearchHit[] {
-  const scored: { hit: SearchHit; score: number }[] = [];
-  for (const l of leagues) {
-    const score = bestScore(query, [l.title, l.description]);
-    if (score === null) continue;
-    scored.push({
-      score,
-      hit: {
-        category: SearchCategory.League,
-        label: l.title,
-        subtitle: l.group,
-        sportGroup: l.group,
-        leagueKey: l.key,
-      },
-    });
-  }
-  return topHits(scored);
+  return [...searchTeams(query, events, leagues), ...searchDates(query, events)];
 }
 
 function searchTeams(query: string, events: RawOddsEvent[], leagues: RawSport[]): SearchHit[] {
@@ -139,8 +115,12 @@ function searchTeams(query: string, events: RawOddsEvent[], leagues: RawSport[])
   const scored: { hit: SearchHit; score: number }[] = [];
   for (const e of events) {
     for (const team of [e.home_team, e.away_team]) {
-      if (!team || seen.has(team)) continue;
-      seen.add(team);
+      if (!team) continue;
+      // Dedupe per (team, league): the same name can legitimately appear in
+      // more than one tracked league/competition within the bounded window.
+      const dedupeKey = `${team}::${e.sport_key}`;
+      if (seen.has(dedupeKey)) continue;
+      seen.add(dedupeKey);
       const score = fuzzyScore(query, team);
       if (score === null) continue;
       scored.push({

@@ -33,6 +33,11 @@ describe('fuzzyScore', () => {
     expect(fuzzyScore('lakerz', 'Lakers')).not.toBeNull();
   });
 
+  it('does not treat unrelated short words one edit apart as a match', () => {
+    expect(fuzzyScore('jets', 'Nets')).toBeNull();
+    expect(fuzzyScore('rays', 'Rams')).toBeNull();
+  });
+
   it('is case- and accent-insensitive', () => {
     expect(fuzzyScore('nurnberg', 'Nürnberg')).not.toBeNull();
   });

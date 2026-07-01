@@ -33,13 +33,25 @@ export function SearchPalette() {
   const { pathname } = useLocation();
   const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
+  const [hasOpened, setHasOpened] = useState(false);
   const [query, setQuery] = useState('');
   const [remoteHits, setRemoteHits] = useState<SearchHit[]>([]);
+  // The query `remoteHits` was fetched for. Only hits matching the CURRENT
+  // query are shown, so results from a superseded query never flash on
+  // screen while the newer debounced request is still in flight.
+  const [remoteHitsQuery, setRemoteHitsQuery] = useState('');
   const [remoteLoading, setRemoteLoading] = useState(false);
+  const [remoteError, setRemoteError] = useState(false);
   const [activeIndex, setActiveIndex] = useState(0);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const { data: sports } = useAsync(getSportsList, []);
+  // Don't fetch the (session-cached) sports list until the palette has been
+  // opened at least once, so mounting it in the header doesn't add a fetch
+  // to every page load for users who never search.
+  const { data: sports } = useAsync(
+    () => (hasOpened ? getSportsList() : Promise.resolve([])),
+    [hasOpened],
+  );
 
   useEffect(() => {
     setIsOpen(false);
@@ -47,12 +59,15 @@ export function SearchPalette() {
 
   useEffect(() => {
     if (isOpen) {
+      setHasOpened(true);
       // Popover mounts the input on open; focus it once it's in the DOM.
       const id = window.setTimeout(() => inputRef.current?.focus(), 0);
       return () => window.clearTimeout(id);
     }
     setQuery('');
     setRemoteHits([]);
+    setRemoteHitsQuery('');
+    setRemoteError(false);
     return undefined;
   }, [isOpen]);
 
@@ -69,8 +84,9 @@ export function SearchPalette() {
   }, []);
 
   useEffect(() => {
+    setRemoteError(false);
+
     if (!BACKEND_ENABLED || !query.trim()) {
-      setRemoteHits([]);
       setRemoteLoading(false);
       return undefined;
     }
@@ -80,10 +96,13 @@ export function SearchPalette() {
     const id = window.setTimeout(() => {
       searchTeamsAndDatesViaGraphql(query)
         .then((hits) => {
-          if (!cancelled) setRemoteHits(hits);
+          if (!cancelled) {
+            setRemoteHits(hits);
+            setRemoteHitsQuery(query);
+          }
         })
         .catch(() => {
-          if (!cancelled) setRemoteHits([]);
+          if (!cancelled) setRemoteError(true);
         })
         .finally(() => {
           if (!cancelled) setRemoteLoading(false);
@@ -102,7 +121,11 @@ export function SearchPalette() {
   );
 
   const grouped = useMemo(() => {
-    const all = [...localHits, ...remoteHits];
+    // Only ever show remote hits fetched for the query currently in the
+    // input — otherwise a slow response for an earlier keystroke could
+    // briefly display results that no longer match what the user typed.
+    const currentRemoteHits = remoteHitsQuery === query ? remoteHits : [];
+    const all = [...localHits, ...currentRemoteHits];
     const byCategory = new Map<SearchHit['category'], SearchHit[]>();
     for (const hit of all) {
       const list = byCategory.get(hit.category) ?? [];
@@ -113,7 +136,7 @@ export function SearchPalette() {
       category,
       hits: byCategory.get(category) ?? [],
     })).filter((g) => g.hits.length > 0);
-  }, [localHits, remoteHits]);
+  }, [localHits, remoteHits, remoteHitsQuery, query]);
 
   const flatHits = useMemo(() => grouped.flatMap((g) => g.hits), [grouped]);
 
@@ -144,7 +167,7 @@ export function SearchPalette() {
   }
 
   const showEmpty =
-    query.trim().length > 0 && !remoteLoading && flatHits.length === 0;
+    query.trim().length > 0 && !remoteLoading && !remoteError && flatHits.length === 0;
   let itemPosition = 0;
 
   return (
@@ -198,6 +221,12 @@ export function SearchPalette() {
             {remoteLoading && query.trim() && grouped.length === 0 && (
               <div className="px-3 py-3 text-sm text-slate-400" role="status">
                 Searching…
+              </div>
+            )}
+
+            {remoteError && query.trim() && (
+              <div className="px-3 py-3 text-sm text-rose-300" role="alert">
+                Search is temporarily unavailable. Sports/leagues results below still work.
               </div>
             )}
 
