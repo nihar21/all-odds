@@ -3,8 +3,8 @@ import type { MarketKey, OddsEvent } from '../types';
 import {
   bestBooksForRow,
   bookColumns,
+  formatOdds,
   formatPoint,
-  formatPrice,
   formatRelativeTime,
   getOutcome,
   isLive,
@@ -12,6 +12,7 @@ import {
   rowsForMarket,
 } from '../lib/odds';
 import { useFavoriteBooks } from '../hooks/useFavoriteBooks';
+import { useOddsFormat } from '../hooks/useOddsFormat';
 
 interface OddsTableProps {
   event: OddsEvent;
@@ -20,6 +21,7 @@ interface OddsTableProps {
 
 export function OddsTable({ event, market }: OddsTableProps) {
   const { favorites } = useFavoriteBooks();
+  const { format } = useOddsFormat();
   const columns = useMemo(
     () => bookColumns(event, favorites),
     [event, favorites],
@@ -129,7 +131,7 @@ export function OddsTable({ event, market }: OddsTableProps) {
                           isBest ? 'text-accent-soft' : 'text-slate-100'
                         }`}
                       >
-                        {formatPrice(price)}
+                        {formatOdds(price, format)}
                       </span>
                     </>
                   );

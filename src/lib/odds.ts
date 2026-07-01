@@ -7,6 +7,40 @@ export function formatPrice(price: number | null | undefined): string {
   return price > 0 ? `+${price}` : `${price}`;
 }
 
+/** User-selectable display format for odds prices. */
+export type OddsFormat = 'american' | 'decimal' | 'percent';
+
+/** Converts an American price to decimal odds (the payout multiplier per unit staked). */
+export function decimalOdds(price: number): number {
+  return price > 0 ? 1 + price / 100 : 1 + 100 / Math.abs(price);
+}
+
+/** Converts an American price to its implied win probability (0–1). */
+export function impliedProbability(price: number): number {
+  return price > 0 ? 100 / (price + 100) : Math.abs(price) / (Math.abs(price) + 100);
+}
+
+/**
+ * Format an American price in the given display format: American (+150/-110),
+ * decimal (2.50), or implied probability (40%). Missing/invalid prices always
+ * render as an em dash, regardless of format.
+ */
+export function formatOdds(
+  price: number | null | undefined,
+  format: OddsFormat = 'american',
+): string {
+  if (price === null || price === undefined || Number.isNaN(price)) return '—';
+  switch (format) {
+    case 'decimal':
+      return decimalOdds(price).toFixed(2);
+    case 'percent':
+      return `${Math.round(impliedProbability(price) * 100)}%`;
+    case 'american':
+    default:
+      return formatPrice(price);
+  }
+}
+
 /** Format a spread/total point with an explicit sign (e.g. +3.5, -7, 45.5). */
 export function formatPoint(point: number | null | undefined): string {
   if (point === null || point === undefined || Number.isNaN(point)) return '';
