@@ -326,6 +326,11 @@ export function dateKey(iso: string): string {
   return `${y}-${m}-${d}`;
 }
 
+/** Local-day key (`YYYY-MM-DD`) for today, in the viewer's local timezone. */
+export function todayKey(): string {
+  return dateKey(new Date().toISOString());
+}
+
 /**
  * Friendly label for a local-day key (`YYYY-MM-DD`): "Today", "Tomorrow", or a
  * short weekday/date like "Sat, Jul 4".
@@ -334,13 +339,12 @@ export function formatDateLabel(key: string): string {
   const [y, m, d] = key.split('-').map(Number);
   const date = new Date(y, m - 1, d);
 
-  const today = new Date();
-  const todayKey = dateKey(today.toISOString());
-  const tomorrow = new Date(today);
-  tomorrow.setDate(today.getDate() + 1);
+  const today = todayKey();
+  const tomorrow = new Date();
+  tomorrow.setDate(tomorrow.getDate() + 1);
   const tomorrowKey = dateKey(tomorrow.toISOString());
 
-  if (key === todayKey) return 'Today';
+  if (key === today) return 'Today';
   if (key === tomorrowKey) return 'Tomorrow';
 
   return date.toLocaleDateString(undefined, {
