@@ -11,6 +11,7 @@ import { SportsSelection } from './pages/SportsSelection';
 import { SportDetail } from './pages/SportDetail';
 import { LeagueDetails } from './pages/LeagueDetails';
 import { LiveSports } from './pages/LiveSports';
+import { Settings } from './pages/Settings';
 
 const router = createBrowserRouter([
   {
@@ -28,6 +29,7 @@ const router = createBrowserRouter([
       { path: '/live', element: <LiveSports /> },
       { path: '/sport/:group', element: <SportDetail /> },
       { path: '/sport/:group/league/:leagueKey', element: <LeagueDetails /> },
+      { path: '/settings', element: <Settings /> },
     ],
   },
 ]);

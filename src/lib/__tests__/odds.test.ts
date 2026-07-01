@@ -4,12 +4,15 @@ import {
   bestBooksForRow,
   bookColumns,
   dateKey,
+  decimalOdds,
   drawOutcomeName,
   formatDateLabel,
   formatGameTime,
+  formatOdds,
   formatPoint,
   formatPrice,
   getOutcome,
+  impliedProbability,
   isLive,
   marketSummary,
   outrightRows,
@@ -61,6 +64,49 @@ describe('formatPoint', () => {
   it('renders an empty string for missing points', () => {
     expect(formatPoint(null)).toBe('');
     expect(formatPoint(undefined)).toBe('');
+  });
+});
+
+describe('decimalOdds', () => {
+  it('converts a positive American price to decimal odds', () => {
+    expect(decimalOdds(150)).toBeCloseTo(2.5);
+  });
+
+  it('converts a negative American price to decimal odds', () => {
+    expect(decimalOdds(-200)).toBeCloseTo(1.5);
+  });
+});
+
+describe('impliedProbability', () => {
+  it('converts a positive American price to implied probability', () => {
+    expect(impliedProbability(150)).toBeCloseTo(0.4);
+  });
+
+  it('converts a negative American price to implied probability', () => {
+    expect(impliedProbability(-200)).toBeCloseTo(2 / 3);
+  });
+});
+
+describe('formatOdds', () => {
+  it('defaults to American formatting', () => {
+    expect(formatOdds(150)).toBe('+150');
+    expect(formatOdds(-110)).toBe('-110');
+  });
+
+  it('formats decimal odds to two decimal places', () => {
+    expect(formatOdds(150, 'decimal')).toBe('2.50');
+    expect(formatOdds(-200, 'decimal')).toBe('1.50');
+  });
+
+  it('formats implied probability as a rounded percentage', () => {
+    expect(formatOdds(150, 'percent')).toBe('40%');
+    expect(formatOdds(-200, 'percent')).toBe('67%');
+  });
+
+  it('renders an em dash for missing prices in every format', () => {
+    expect(formatOdds(null, 'decimal')).toBe('—');
+    expect(formatOdds(undefined, 'percent')).toBe('—');
+    expect(formatOdds(NaN, 'american')).toBe('—');
   });
 });
 

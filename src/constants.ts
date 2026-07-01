@@ -1,4 +1,5 @@
 import type { BookmakerInfo, MarketKey } from './types';
+import type { OddsFormat } from './lib/odds';
 
 // Markets offered by the game-odds picker. `outrights` is intentionally
 // excluded — it has no head-to-head counterpart and renders via OutrightCard.
@@ -63,3 +64,18 @@ export const SPORT_ICONS: Record<string, string> = {
 export function sportIcon(group: string): string {
   return SPORT_ICONS[group] ?? '🎯';
 }
+
+// User-selectable odds display formats, offered in this order on the Settings page.
+export const ODDS_FORMATS: OddsFormat[] = ['american', 'decimal', 'percent'];
+
+export const ODDS_FORMAT_LABELS: Record<OddsFormat, string> = {
+  american: 'American',
+  decimal: 'Decimal',
+  percent: 'Implied %',
+};
+
+export const ODDS_FORMAT_DESCRIPTIONS: Record<OddsFormat, string> = {
+  american: 'e.g. +150, -110',
+  decimal: 'e.g. 2.50, 1.91',
+  percent: 'e.g. 40%, 52%',
+};
