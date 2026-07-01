@@ -31,6 +31,14 @@ type Query {
 
   "Live + recently-completed scores for a league (one concrete league key; not \"upcoming\")."
   liveScores(leagueKey: ID!, daysFrom: Int): [LiveScore!]!
+
+  """
+  Fuzzy, typo-tolerant search across sports, leagues, teams, and upcoming-game
+  dates for the top bar's global search. Teams and dates are drawn from the
+  bounded \"upcoming\" event set (see `events`), not an exhaustive per-league
+  scan, so a team/date with no game in that window won't surface.
+  """
+  search(query: String!): [SearchHit!]!
 }
 
 "A sport/league offered by the odds provider (e.g. NBA, EPL)."
@@ -101,6 +109,30 @@ type LiveScore {
 type ScoreEntry {
   name: String!
   score: String!
+}
+
+"One of the four global-search result categories."
+enum SearchCategory {
+  SPORT
+  LEAGUE
+  TEAM
+  DATE
+}
+
+"A single fuzzy-matched global-search result the client can navigate to."
+type SearchHit {
+  category: SearchCategory!
+  "Display label (a sport/league name, a team, or a formatted date)."
+  label: String!
+  "Secondary text shown under the label (e.g. a team's league)."
+  subtitle: String
+  """
+  Sport group, to build the `/sport/:group` route. Null for a DATE hit that
+  spans multiple leagues.
+  """
+  sportGroup: String
+  "League key, to build the `/sport/:group/league/:leagueKey` route."
+  leagueKey: ID
 }
 
 enum MarketKey {

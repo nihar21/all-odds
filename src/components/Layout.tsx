@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 import { Link, Outlet, useLocation } from 'react-router-dom';
 import { SportsMenu } from './SportsMenu';
+import { SearchPalette } from './SearchPalette';
 
 interface LayoutProps {
   children?: ReactNode;
@@ -41,6 +42,7 @@ export function Layout({ children }: LayoutProps) {
           </div>
 
           <nav aria-label="Primary" className="flex items-center gap-1 text-sm">
+            <SearchPalette />
             <Link
               to="/"
               aria-current={pathname === '/' ? 'page' : undefined}

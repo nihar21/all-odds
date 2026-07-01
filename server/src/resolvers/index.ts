@@ -7,6 +7,7 @@ import {
   oddsFormatToUpstream,
   regionToUpstream,
 } from './mappers.js';
+import { search } from './search.js';
 
 const DEFAULT_MARKETS = [MarketKey.H2H, MarketKey.Spreads, MarketKey.Totals];
 
@@ -42,5 +43,7 @@ export const resolvers: Resolvers = {
       const scores = await oddsApi.getScores(leagueKey, daysFrom ?? undefined);
       return scores.map(mapLiveScore);
     },
+
+    search: async (_parent, { query }, { oddsApi }) => search(query, oddsApi),
   },
 };
