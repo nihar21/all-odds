@@ -37,13 +37,17 @@ live view.
 - Reuse `BOOKMAKERS` ordering and `sportIcon()` from `constants.ts` rather than
   hardcoding book/sport display details.
 
-## Build / "tests"
-- There is no separate unit-test suite. The quality gate is the build:
-  - `npm run lint` → `tsc --noEmit`
-  - `npm run build` → `tsc && vite build`
+## Build / tests
+- `npm run lint` → `tsc --noEmit`
+- `npm run test` → Vitest unit tests (`src/lib/__tests__/`, jsdom env via
+  `vitest.config.ts` / `src/test/setup.ts`). Currently covers the pure logic
+  in `lib/odds.ts`, `lib/logos.ts`, and `lib/api.ts` (fetch mocked).
+- `npm run build` → `tsc && vite build`
+- `npm run verify` runs all three (lint → test → build) — the single
+  command an agent or CI should run to validate a change.
 - CI (`.github/workflows/firebase-hosting-pull-request.yml`) runs
-  `npm ci && npm run build` on every PR and deploys a preview. "Tests pass" /
-  "green" means this build check succeeds.
+  `npm ci && npm run verify` on every PR and deploys a preview. "Tests pass" /
+  "green" means this check succeeds.
 - Pinned `typescript@5.5.4`. If the environment's global TypeScript is newer it
   surfaces an unrelated `tsconfig` `baseUrl` deprecation error — run
   `npm install --no-save typescript@5.5.4` first to typecheck against the pin.

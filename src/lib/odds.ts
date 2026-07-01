@@ -17,6 +17,8 @@ export function formatPoint(point: number | null | undefined): string {
 export interface BookColumn {
   key: string;
   title: string;
+  /** Public web URL for the sportsbook, if known. */
+  url?: string;
 }
 
 /**
@@ -34,12 +36,17 @@ export function bookColumns(
   const ordered = BOOKMAKERS.filter((b) => present.has(b.key)).map((b) => ({
     key: b.key,
     title: b.title,
+    url: b.url,
   }));
   // Include any books returned by the API that aren't in our preferred list.
   const known = new Set(ordered.map((b) => b.key));
   for (const b of event.bookmakers) {
     if (!known.has(b.key)) {
-      ordered.push({ key: b.key, title: BOOKMAKER_TITLES[b.key] ?? b.title });
+      ordered.push({
+        key: b.key,
+        title: BOOKMAKER_TITLES[b.key] ?? b.title,
+        url: undefined,
+      });
     }
   }
   if (favorites && favorites.size > 0) {
