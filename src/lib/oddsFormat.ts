@@ -5,10 +5,10 @@
  * `useOddsFormat`.
  */
 import type { OddsFormat } from './odds';
+import { ODDS_FORMATS } from '../constants';
 
 const STORAGE_KEY = 'allodds:odds-format';
 const DEFAULT_FORMAT: OddsFormat = 'american';
-const VALID_FORMATS: readonly OddsFormat[] = ['american', 'decimal', 'percent'];
 
 type Listener = () => void;
 
@@ -19,7 +19,7 @@ let snapshot: OddsFormat = readFromStorage();
 function readFromStorage(): OddsFormat {
   try {
     const raw = window.localStorage.getItem(STORAGE_KEY);
-    return (VALID_FORMATS as readonly string[]).includes(raw ?? '')
+    return (ODDS_FORMATS as readonly string[]).includes(raw ?? '')
       ? (raw as OddsFormat)
       : DEFAULT_FORMAT;
   } catch {
