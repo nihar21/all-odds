@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import type { MarketKey, OddsEvent } from '../types';
 import {
   bestBooksForRow,
@@ -19,6 +19,36 @@ import { useOddsFormat } from '../hooks/useOddsFormat';
 interface OddsTableProps {
   event: OddsEvent;
   market: MarketKey;
+}
+
+function SortableHeader({
+  label,
+  sortKey,
+  sort,
+  onToggle,
+  thClassName,
+  buttonClassName,
+}: {
+  label: string;
+  sortKey: OddsSort['key'];
+  sort: OddsSort | null;
+  onToggle: (key: OddsSort['key']) => void;
+  thClassName: string;
+  buttonClassName: string;
+}) {
+  const active = sort?.key === sortKey;
+  return (
+    <th
+      scope="col"
+      aria-sort={active ? (sort!.dir === 'asc' ? 'ascending' : 'descending') : 'none'}
+      className={thClassName}
+    >
+      <button type="button" onClick={() => onToggle(sortKey)} className={buttonClassName}>
+        {label}
+        {active && <SortArrow dir={sort!.dir} />}
+      </button>
+    </th>
+  );
 }
 
 function SortArrow({ dir }: { dir: 'asc' | 'desc' }) {
@@ -48,11 +78,22 @@ export function OddsTable({ event, market }: OddsTableProps) {
   const rows = useMemo(() => rowsForMarket(event, market), [event, market]);
   const [sort, setSort] = useState<OddsSort | null>(null);
 
-  // A sort chosen for one market's columns/rows doesn't necessarily make
-  // sense for another; reset to the natural order on market change.
-  useEffect(() => {
+  // Reset the sort synchronously during render — rather than in an Effect —
+  // so a market change never paints a frame with the old market's sort still
+  // applied. Tracked with state (not a ref): mutating a ref during render is
+  // not idempotent under StrictMode's double-invoke, which caused the reset
+  // to silently lose to a stale second render pass.
+  const [prevMarket, setPrevMarket] = useState(market);
+  if (market !== prevMarket) {
+    setPrevMarket(market);
+    if (sort !== null) setSort(null);
+  } else if (
+    sort &&
+    sort.key !== 'outcome' &&
+    !columns.some((col) => col.key === sort.key)
+  ) {
     setSort(null);
-  }, [market]);
+  }
 
   function toggleSort(key: OddsSort['key']) {
     setSort((prev) => {
@@ -112,48 +153,24 @@ export function OddsTable({ event, market }: OddsTableProps) {
         <table className="w-full border-separate border-spacing-0 text-sm">
           <thead>
             <tr>
-              <th
-                scope="col"
-                aria-sort={
-                  sort?.key === 'outcome'
-                    ? sort.dir === 'asc'
-                      ? 'ascending'
-                      : 'descending'
-                    : 'none'
-                }
-                className="sticky left-0 z-10 min-w-[9rem] rounded-tl-xl bg-ink-800/95 px-4 py-2.5 text-left text-xs font-semibold uppercase tracking-wide text-slate-400 backdrop-blur"
-              >
-                <button
-                  type="button"
-                  onClick={() => toggleSort('outcome')}
-                  className="flex items-center gap-1 uppercase tracking-wide hover:text-slate-200"
-                >
-                  Outcome
-                  {sort?.key === 'outcome' && <SortArrow dir={sort.dir} />}
-                </button>
-              </th>
+              <SortableHeader
+                label="Outcome"
+                sortKey="outcome"
+                sort={sort}
+                onToggle={toggleSort}
+                thClassName="sticky left-0 z-10 min-w-[9rem] rounded-tl-xl bg-ink-800/95 px-4 py-2.5 text-left text-xs font-semibold uppercase tracking-wide text-slate-400 backdrop-blur"
+                buttonClassName="flex items-center gap-1 uppercase tracking-wide hover:text-slate-200"
+              />
               {columns.map((col) => (
-                <th
-                  scope="col"
+                <SortableHeader
                   key={col.key}
-                  aria-sort={
-                    sort?.key === col.key
-                      ? sort.dir === 'asc'
-                        ? 'ascending'
-                        : 'descending'
-                      : 'none'
-                  }
-                  className="min-w-[5.5rem] border-b border-white/10 bg-ink-800/60 px-3 py-2.5 text-center text-xs font-semibold text-slate-300"
-                >
-                  <button
-                    type="button"
-                    onClick={() => toggleSort(col.key)}
-                    className="flex w-full items-center justify-center gap-1 hover:text-slate-100"
-                  >
-                    {col.title}
-                    {sort?.key === col.key && <SortArrow dir={sort.dir} />}
-                  </button>
-                </th>
+                  label={col.title}
+                  sortKey={col.key}
+                  sort={sort}
+                  onToggle={toggleSort}
+                  thClassName="min-w-[5.5rem] border-b border-white/10 bg-ink-800/60 px-3 py-2.5 text-center text-xs font-semibold text-slate-300"
+                  buttonClassName="flex w-full items-center justify-center gap-1 hover:text-slate-100"
+                />
               ))}
             </tr>
           </thead>
