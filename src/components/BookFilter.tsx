@@ -96,6 +96,10 @@ export function BookFilter({ label, size = 'md' }: BookFilterProps) {
             selectionMode="multiple"
             selectedKeys={favorites}
             onSelectionChange={handleSelectionChange}
+            // Default 'clearSelection' wipes the user's favorites when they
+            // press Escape to close the popover (a "cancel"-like reflex for a
+            // dismissable overlay) instead of just dismissing it.
+            escapeKeyBehavior="none"
             aria-label="Sportsbooks"
             className="max-h-72 overflow-auto p-1 outline-none"
           >
