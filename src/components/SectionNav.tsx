@@ -20,6 +20,16 @@ export function SectionNav({ items }: SectionNavProps) {
   const [activeId, setActiveId] = useState<string | null>(items[0]?.id ?? null);
   const pillRefs = useRef(new Map<string, HTMLButtonElement>());
 
+  // Re-sync the active pill whenever the section set changes shape (e.g. the
+  // league page switching between date-based and time-based sections) — without
+  // this, a stale id from the previous item set can leave no pill highlighted
+  // until the observer happens to fire again.
+  useEffect(() => {
+    setActiveId((prev) =>
+      prev && items.some((item) => item.id === prev) ? prev : (items[0]?.id ?? null),
+    );
+  }, [items]);
+
   useEffect(() => {
     if (items.length < 2) return;
 

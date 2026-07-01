@@ -9,7 +9,6 @@ import {
   formatGameTime,
   formatPoint,
   formatPrice,
-  formatTimeLabel,
   getOutcome,
   isLive,
   marketSummary,
@@ -445,18 +444,13 @@ describe('sectionsByDate', () => {
   });
 });
 
-describe('timeKey / formatTimeLabel', () => {
+describe('timeKey', () => {
   it('formats a local HH:mm key from an ISO timestamp', () => {
     const date = new Date('2026-03-15T18:00:00Z');
     const expected = `${String(date.getHours()).padStart(2, '0')}:${String(
       date.getMinutes(),
     ).padStart(2, '0')}`;
     expect(timeKey('2026-03-15T18:00:00Z')).toBe(expected);
-  });
-
-  it('formats a friendly time label matching formatGameTime\'s time portion', () => {
-    const { time } = formatGameTime('2026-03-15T18:00:00Z');
-    expect(formatTimeLabel(timeKey('2026-03-15T18:00:00Z'))).toBe(time);
   });
 });
 
@@ -478,6 +472,13 @@ describe('sectionsByTime', () => {
       makeEvent({ id: 'a', commence_time: '2026-03-15T18:00:00Z' }),
     ]);
     expect(sections[0].id).not.toContain(':');
+  });
+
+  it("labels each section using formatGameTime's time portion for its first event", () => {
+    const sections = sectionsByTime([
+      makeEvent({ id: 'a', commence_time: '2026-03-15T18:00:00Z' }),
+    ]);
+    expect(sections[0].label).toBe(formatGameTime('2026-03-15T18:00:00Z').time);
   });
 });
 

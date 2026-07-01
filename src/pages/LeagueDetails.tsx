@@ -107,6 +107,11 @@ export function LeagueDetails() {
       : sectionsByTime(visibleEvents);
   }, [outright, selectedDate, visibleEvents]);
 
+  const sectionNavItems = useMemo(
+    () => sections.map((s) => ({ id: s.id, label: s.label })),
+    [sections],
+  );
+
   // Reset per-event selections and date filter whenever a fresh league loads.
   useEffect(() => {
     setPerEvent({});
@@ -198,7 +203,7 @@ export function LeagueDetails() {
 
       {!loading && !error && visibleEvents.length > 0 && !outright && (
         <>
-          <SectionNav items={sections.map((s) => ({ id: s.id, label: s.label }))} />
+          <SectionNav items={sectionNavItems} />
           <div className="space-y-8">
             {sections.map((section) => (
               <section key={section.id} id={section.id}>

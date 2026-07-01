@@ -364,14 +364,17 @@ export interface EventSection {
 }
 
 /**
- * Groups already-time-sorted events into per-local-day sections, in the order
- * days first appear (i.e. chronological, since the input is pre-sorted).
+ * Groups already-time-sorted events by a per-event key, in the order distinct
+ * keys first appear (i.e. chronological, since the input is pre-sorted).
  */
-export function sectionsByDate(events: OddsEvent[]): EventSection[] {
+function groupByFirstSeen(
+  events: OddsEvent[],
+  keyFn: (event: OddsEvent) => string,
+): Array<[key: string, events: OddsEvent[]]> {
   const order: string[] = [];
   const groups = new Map<string, OddsEvent[]>();
   for (const event of events) {
-    const key = dateKey(event.commence_time);
+    const key = keyFn(event);
     const group = groups.get(key);
     if (group) group.push(event);
     else {
@@ -379,11 +382,21 @@ export function sectionsByDate(events: OddsEvent[]): EventSection[] {
       order.push(key);
     }
   }
-  return order.map((key) => ({
-    id: `date-${key}`,
-    label: formatDateLabel(key),
-    events: groups.get(key)!,
-  }));
+  return order.map((key) => [key, groups.get(key)!]);
+}
+
+/**
+ * Groups already-time-sorted events into per-local-day sections, in the order
+ * days first appear (i.e. chronological, since the input is pre-sorted).
+ */
+export function sectionsByDate(events: OddsEvent[]): EventSection[] {
+  return groupByFirstSeen(events, (event) => dateKey(event.commence_time)).map(
+    ([key, group]) => ({
+      id: `date-${key}`,
+      label: formatDateLabel(key),
+      events: group,
+    }),
+  );
 }
 
 /** Local `HH:mm` (24h) key for an event's start time, for grouping same-time events. */
@@ -394,35 +407,21 @@ export function timeKey(iso: string): string {
   return `${h}:${m}`;
 }
 
-/** Friendly local time label (e.g. "7:00 PM") for a `timeKey`-formatted `HH:mm` key. */
-export function formatTimeLabel(key: string): string {
-  const [h, m] = key.split(':').map(Number);
-  const date = new Date();
-  date.setHours(h, m, 0, 0);
-  return date.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' });
-}
-
 /**
  * Groups already-time-sorted events (assumed to be within a single day) into
- * per-start-time sections, in the order times first appear.
+ * per-start-time sections, in the order times first appear. The section label
+ * is formatted from the group's own first event via `formatGameTime`, so it
+ * always reflects that event's actual date (no DST ambiguity from reconstructing
+ * a synthetic date out of just the `HH:mm` key).
  */
 export function sectionsByTime(events: OddsEvent[]): EventSection[] {
-  const order: string[] = [];
-  const groups = new Map<string, OddsEvent[]>();
-  for (const event of events) {
-    const key = timeKey(event.commence_time);
-    const group = groups.get(key);
-    if (group) group.push(event);
-    else {
-      groups.set(key, [event]);
-      order.push(key);
-    }
-  }
-  return order.map((key) => ({
-    id: `time-${key.replace(':', '')}`,
-    label: formatTimeLabel(key),
-    events: groups.get(key)!,
-  }));
+  return groupByFirstSeen(events, (event) => timeKey(event.commence_time)).map(
+    ([key, group]) => ({
+      id: `time-${key.replace(':', '')}`,
+      label: formatGameTime(group[0].commence_time).time,
+      events: group,
+    }),
+  );
 }
 
 /** Slugifies a title into a DOM-id-safe string (lowercase, alphanumeric, hyphenated). */

@@ -44,8 +44,21 @@ export function LiveSports() {
       if (list) list.push(event);
       else bySport.set(title, [event]);
     }
+
+    // Slugified titles aren't guaranteed unique (e.g. titles differing only in
+    // punctuation); disambiguate so section DOM ids never collide.
+    const usedIds = new Set<string>();
+    function uniqueId(title: string): string {
+      const base = `sport-${slugify(title)}`;
+      let id = base;
+      let n = 2;
+      while (usedIds.has(id)) id = `${base}-${n++}`;
+      usedIds.add(id);
+      return id;
+    }
+
     return Array.from(bySport, ([title, events]) => ({
-      id: `sport-${slugify(title)}`,
+      id: uniqueId(title),
       title,
       events,
     })).sort((a, b) => a.title.localeCompare(b.title));
