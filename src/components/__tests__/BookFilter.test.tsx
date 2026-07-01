@@ -98,3 +98,41 @@ describe('BookFilter + OddsTable favorites sync', () => {
     expect(screen.queryByRole('option', { name: 'FanDuel' })).not.toBeInTheDocument();
   });
 });
+
+describe('OddsTable header fallback for books with no bundled logo', () => {
+  beforeEach(() => {
+    clearFavoriteBooks();
+  });
+
+  it('renders the plain-text title for a bookmaker outside the curated BOOKMAKERS/logo list', () => {
+    const eventWithUnknownBook: OddsEvent = {
+      ...event,
+      bookmakers: [
+        ...event.bookmakers,
+        {
+          key: 'some_new_book',
+          title: 'Some New Book',
+          last_update: new Date().toISOString(),
+          markets: [
+            {
+              key: 'h2h',
+              last_update: new Date().toISOString(),
+              outcomes: [
+                { name: 'Lakers', price: -140 },
+                { name: 'Celtics', price: 120 },
+              ],
+            },
+          ],
+        },
+      ],
+    };
+    const { container } = render(<OddsTable event={eventWithUnknownBook} market="h2h" />);
+
+    // Known books (bundled logo) render an <img>; unknown books fall back to
+    // the plain-text title, inside the real table header markup (not just
+    // BookLogo in isolation).
+    expect(container.querySelector('th[scope="col"] img[alt="FanDuel"]')).toBeInTheDocument();
+    expect(container.querySelector('th[scope="col"] img[alt="Some New Book"]')).not.toBeInTheDocument();
+    expect(screen.getByText('Some New Book')).toBeInTheDocument();
+  });
+});

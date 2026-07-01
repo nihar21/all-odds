@@ -35,7 +35,10 @@ export function BookLogo({
 
   if (!src || failed) {
     return decorative ? null : (
-      <span className={`truncate text-xs font-semibold text-slate-300 ${className}`}>
+      <span
+        className={`inline-flex items-center justify-center truncate text-xs font-semibold text-slate-300 ${className}`}
+        style={{ height: size }}
+      >
         {title}
       </span>
     );
@@ -50,8 +53,8 @@ export function BookLogo({
       width={size}
       height={size}
       loading="lazy"
-      className={`inline-block w-auto shrink-0 object-contain ${className}`}
-      style={{ height: size }}
+      className={`inline-block shrink-0 object-contain ${className}`}
+      style={{ width: size, height: size }}
       onError={() => setFailed(true)}
     />
   );
