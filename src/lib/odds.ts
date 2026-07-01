@@ -353,3 +353,81 @@ export function formatDateLabel(key: string): string {
     day: 'numeric',
   });
 }
+
+/** A contiguous, anchorable group of events for the scroll-spy table-of-contents bar. */
+export interface EventSection {
+  /** DOM id the section's heading anchors to (no colons, safe for id/href use). */
+  id: string;
+  /** Pill label shown in the table-of-contents bar. */
+  label: string;
+  events: OddsEvent[];
+}
+
+/**
+ * Groups already-time-sorted events by a per-event key, in the order distinct
+ * keys first appear (i.e. chronological, since the input is pre-sorted).
+ */
+function groupByFirstSeen(
+  events: OddsEvent[],
+  keyFn: (event: OddsEvent) => string,
+): Array<[key: string, events: OddsEvent[]]> {
+  const order: string[] = [];
+  const groups = new Map<string, OddsEvent[]>();
+  for (const event of events) {
+    const key = keyFn(event);
+    const group = groups.get(key);
+    if (group) group.push(event);
+    else {
+      groups.set(key, [event]);
+      order.push(key);
+    }
+  }
+  return order.map((key) => [key, groups.get(key)!]);
+}
+
+/**
+ * Groups already-time-sorted events into per-local-day sections, in the order
+ * days first appear (i.e. chronological, since the input is pre-sorted).
+ */
+export function sectionsByDate(events: OddsEvent[]): EventSection[] {
+  return groupByFirstSeen(events, (event) => dateKey(event.commence_time)).map(
+    ([key, group]) => ({
+      id: `date-${key}`,
+      label: formatDateLabel(key),
+      events: group,
+    }),
+  );
+}
+
+/** Local `HH:mm` (24h) key for an event's start time, for grouping same-time events. */
+export function timeKey(iso: string): string {
+  const date = new Date(iso);
+  const h = String(date.getHours()).padStart(2, '0');
+  const m = String(date.getMinutes()).padStart(2, '0');
+  return `${h}:${m}`;
+}
+
+/**
+ * Groups already-time-sorted events (assumed to be within a single day) into
+ * per-start-time sections, in the order times first appear. The section label
+ * is formatted from the group's own first event via `formatGameTime`, so it
+ * always reflects that event's actual date (no DST ambiguity from reconstructing
+ * a synthetic date out of just the `HH:mm` key).
+ */
+export function sectionsByTime(events: OddsEvent[]): EventSection[] {
+  return groupByFirstSeen(events, (event) => timeKey(event.commence_time)).map(
+    ([key, group]) => ({
+      id: `time-${key.replace(':', '')}`,
+      label: formatGameTime(group[0].commence_time).time,
+      events: group,
+    }),
+  );
+}
+
+/** Slugifies a title into a DOM-id-safe string (lowercase, alphanumeric, hyphenated). */
+export function slugify(title: string): string {
+  return title
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+}

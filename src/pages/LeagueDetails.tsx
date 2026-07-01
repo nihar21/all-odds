@@ -12,7 +12,8 @@ import { BookFilter } from '../components/BookFilter';
 import { DatePicker, ALL_DAYS } from '../components/DatePicker';
 import { EventCard } from '../components/EventCard';
 import { OutrightCard } from '../components/OutrightCard';
-import { dateKey } from '../lib/odds';
+import { SectionNav } from '../components/SectionNav';
+import { dateKey, sectionsByDate, sectionsByTime } from '../lib/odds';
 
 export function LeagueDetails() {
   // React Router already URL-decodes route params, so use `group` directly.
@@ -97,6 +98,20 @@ export function LeagueDetails() {
     return events.filter((e) => dateKey(e.commence_time) === selectedDate);
   }, [events, selectedDate]);
 
+  // Table-of-contents sections: by date across "All days", by start time within
+  // a single day. Outright/futures leagues have no date/time structure to anchor.
+  const sections = useMemo(() => {
+    if (outright) return [];
+    return selectedDate === ALL_DAYS
+      ? sectionsByDate(visibleEvents)
+      : sectionsByTime(visibleEvents);
+  }, [outright, selectedDate, visibleEvents]);
+
+  const sectionNavItems = useMemo(
+    () => sections.map((s) => ({ id: s.id, label: s.label })),
+    [sections],
+  );
+
   // Reset per-event selections and date filter whenever a fresh league loads.
   useEffect(() => {
     setPerEvent({});
@@ -178,24 +193,42 @@ export function LeagueDetails() {
         />
       )}
 
-      {!loading && !error && visibleEvents.length > 0 && (
+      {!loading && !error && visibleEvents.length > 0 && outright && (
         <div className="space-y-5">
-          {visibleEvents.map((event) =>
-            outright ? (
-              <OutrightCard key={event.id} event={event} />
-            ) : (
-              <EventCard
-                key={event.id}
-                event={event}
-                market={perEvent[event.id] ?? master}
-                onMarketChange={(m) =>
-                  setPerEvent((prev) => ({ ...prev, [event.id]: m }))
-                }
-                score={scores.get(event.id)}
-              />
-            ),
-          )}
+          {visibleEvents.map((event) => (
+            <OutrightCard key={event.id} event={event} />
+          ))}
         </div>
+      )}
+
+      {!loading && !error && visibleEvents.length > 0 && !outright && (
+        <>
+          <SectionNav items={sectionNavItems} />
+          <div className="space-y-8">
+            {sections.map((section) => (
+              <section key={section.id} id={section.id}>
+                {sections.length > 1 && (
+                  <h2 className="mb-3 font-display text-sm font-semibold uppercase tracking-wide text-slate-400">
+                    {section.label}
+                  </h2>
+                )}
+                <div className="space-y-5">
+                  {section.events.map((event) => (
+                    <EventCard
+                      key={event.id}
+                      event={event}
+                      market={perEvent[event.id] ?? master}
+                      onMarketChange={(m) =>
+                        setPerEvent((prev) => ({ ...prev, [event.id]: m }))
+                      }
+                      score={scores.get(event.id)}
+                    />
+                  ))}
+                </div>
+              </section>
+            ))}
+          </div>
+        </>
       )}
     </div>
   );

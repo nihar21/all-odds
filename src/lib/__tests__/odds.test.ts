@@ -14,6 +14,10 @@ import {
   marketSummary,
   outrightRows,
   rowsForMarket,
+  sectionsByDate,
+  sectionsByTime,
+  slugify,
+  timeKey,
 } from '../odds';
 
 function makeEvent(overrides: Partial<OddsEvent> = {}): OddsEvent {
@@ -414,5 +418,77 @@ describe('dateKey / formatDateLabel', () => {
     expect(label).not.toBe('Today');
     expect(label).not.toBe('Tomorrow');
     expect(label.length).toBeGreaterThan(0);
+  });
+});
+
+describe('sectionsByDate', () => {
+  it('groups events by local day, in first-seen (chronological) order', () => {
+    const events = [
+      makeEvent({ id: 'a', commence_time: '2026-03-15T18:00:00Z' }),
+      makeEvent({ id: 'b', commence_time: '2026-03-16T18:00:00Z' }),
+      makeEvent({ id: 'c', commence_time: '2026-03-15T20:00:00Z' }),
+    ];
+    const sections = sectionsByDate(events);
+    expect(sections).toHaveLength(2);
+    expect(sections[0].events.map((e) => e.id)).toEqual(['a', 'c']);
+    expect(sections[1].events.map((e) => e.id)).toEqual(['b']);
+  });
+
+  it('produces distinct, colon-free ids per day and reuses formatDateLabel for the label', () => {
+    const key = localDateKey(new Date());
+    const events = [makeEvent({ id: 'a', commence_time: new Date().toISOString() })];
+    const sections = sectionsByDate(events);
+    expect(sections[0].id).toBe(`date-${key}`);
+    expect(sections[0].id).not.toContain(':');
+    expect(sections[0].label).toBe(formatDateLabel(key));
+  });
+});
+
+describe('timeKey', () => {
+  it('formats a local HH:mm key from an ISO timestamp', () => {
+    const date = new Date('2026-03-15T18:00:00Z');
+    const expected = `${String(date.getHours()).padStart(2, '0')}:${String(
+      date.getMinutes(),
+    ).padStart(2, '0')}`;
+    expect(timeKey('2026-03-15T18:00:00Z')).toBe(expected);
+  });
+});
+
+describe('sectionsByTime', () => {
+  it('groups events by exact local start time, in first-seen order', () => {
+    const events = [
+      makeEvent({ id: 'a', commence_time: '2026-03-15T18:00:00Z' }),
+      makeEvent({ id: 'b', commence_time: '2026-03-15T20:00:00Z' }),
+      makeEvent({ id: 'c', commence_time: '2026-03-15T18:00:00Z' }),
+    ];
+    const sections = sectionsByTime(events);
+    expect(sections).toHaveLength(2);
+    expect(sections[0].events.map((e) => e.id)).toEqual(['a', 'c']);
+    expect(sections[1].events.map((e) => e.id)).toEqual(['b']);
+  });
+
+  it('produces colon-free ids', () => {
+    const sections = sectionsByTime([
+      makeEvent({ id: 'a', commence_time: '2026-03-15T18:00:00Z' }),
+    ]);
+    expect(sections[0].id).not.toContain(':');
+  });
+
+  it("labels each section using formatGameTime's time portion for its first event", () => {
+    const sections = sectionsByTime([
+      makeEvent({ id: 'a', commence_time: '2026-03-15T18:00:00Z' }),
+    ]);
+    expect(sections[0].label).toBe(formatGameTime('2026-03-15T18:00:00Z').time);
+  });
+});
+
+describe('slugify', () => {
+  it('lowercases and hyphenates non-alphanumeric runs', () => {
+    expect(slugify('NBA Basketball')).toBe('nba-basketball');
+    expect(slugify("Women's World Cup")).toBe('women-s-world-cup');
+  });
+
+  it('trims leading/trailing hyphens', () => {
+    expect(slugify('  MLB!  ')).toBe('mlb');
   });
 });
