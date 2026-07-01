@@ -1,19 +1,19 @@
 # See http://help.github.com/ignore-files/ for more about ignoring files.
 
 # Compiled output
-/dist
+/app/dist
 /tmp
 /out-tsc
 /bazel-out
 
-# Node
-/node_modules
+# Node (npm workspaces hoist to the root, but ignore per-workspace copies too)
+node_modules/
+
 npm-debug.log
 yarn-error.log
 
-# Backend (server/) build output & deps
-/server/node_modules
-/server/dist
+# Backend (api/) build output
+/api/dist
 
 # Build artifacts
 *.tsbuildinfo

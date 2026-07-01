@@ -14,7 +14,8 @@ function commitHash(): string {
   }
 }
 
-// Build into dist/all-odds to stay compatible with the existing Firebase Hosting config.
+// Build into dist/all-odds (i.e. app/dist/all-odds from the repo root) to stay
+// compatible with the existing Firebase Hosting config.
 export default defineConfig({
   plugins: [react()],
   define: {

@@ -8,9 +8,17 @@ live view.
 - React 18 + TypeScript, Vite, Tailwind CSS, React Aria Components, React Router.
 - Data from the-odds-api.com v4 (client-only; API key is public by design,
   overridable via the `VITE_ODDS_API_KEY` env var).
-- Hosted on Firebase Hosting; built into `dist/all-odds`.
+- Hosted on Firebase Hosting; built into `app/dist/all-odds`.
 
-## Project layout
+## Repo layout
+This is an npm-workspaces monorepo with the front-end and backend split into
+top-level folders; `npm install`/`npm run <script>` at the repo root delegate
+into the `app` workspace (see root `package.json`), so day-to-day commands are
+unchanged from a single-package repo.
+- **`app/`** — the front-end (React/Vite/TS), own `package.json`.
+- **`api/`** — the backend (Node + GraphQL), own `package.json`. See below.
+
+## Project layout (inside `app/`)
 - `src/pages/` — route components: `SportsSelection` (home), `SportDetail`
   (leagues in a sport), `LeagueDetails` (odds for a league), `LiveSports`
   (`/live`). Routes are wired in `src/main.tsx`.
@@ -25,23 +33,24 @@ live view.
 - `src/lib/graphql/` — optional GraphQL backend integration: `client.ts`
   (Apollo Client + `BACKEND_ENABLED` flag), `*.graphql` operations, and the
   committed codegen output `generated.ts`.
-- `server/` — **separate** Node + TypeScript + Apollo Server backend (own
+
+## Backend (optional GraphQL layer, `api/`)
+- `api/` is a **separate** Node + TypeScript + Apollo Server backend (own
   `package.json`, not part of the Firebase build). Proxies the-odds-api behind a
   typed GraphQL schema with server-side caching + rate-limit handling. See
-  `server/README.md`.
-
-## Backend (optional GraphQL layer)
+  `api/README.md`.
 - The app is **client-only by default**. When `VITE_GRAPHQL_URL` is set, feature
   loaders that have been migrated (currently only `getSportsList`) source data
-  from the `server/` GraphQL backend instead of calling the-odds-api directly;
+  from the `api/` GraphQL backend instead of calling the-odds-api directly;
   unset, behavior is unchanged (so the deployed build is unaffected).
-- `server/src/schema.graphql` is the single source of truth. Both the root app
-  and `server/` run `npm run codegen` against it to regenerate shared TS types
-  (`src/lib/graphql/generated.ts` and `server/src/generated/graphql.ts`). The
+- `api/src/schema.graphql` is the single source of truth. Both `app/` and
+  `api/` run `npm run codegen` against it to regenerate shared TS types
+  (`app/src/lib/graphql/generated.ts` and `api/src/generated/graphql.ts`). The
   generated files are committed so builds never depend on codegen running.
-- To migrate another feature: add a `.graphql` operation under `src/lib/graphql/`,
-  run codegen, and branch on `BACKEND_ENABLED` in its loader (mirror
-  `getSportsList`). Add the matching resolver in `server/src/resolvers/`.
+- To migrate another feature: add a `.graphql` operation under
+  `app/src/lib/graphql/`, run codegen, and branch on `BACKEND_ENABLED` in its
+  loader (mirror `getSportsList`). Add the matching resolver in
+  `api/src/resolvers/`.
 
 ## Conventions & gotchas
 - Fetch data with the `useAsync(loader, deps)` hook and render explicit
@@ -56,26 +65,29 @@ live view.
   queries; it returns a bounded set (live + next games), not an exhaustive list.
 - Reuse `BOOKMAKERS` ordering and `sportIcon()` from `constants.ts` rather than
   hardcoding book/sport display details.
-- Team logos are build-time: `scripts/fetch-logos.mjs` fetches from ESPN and
-  writes `src/data/teamLogos.json` + `public/logos/`; `src/lib/logos.ts` /
-  `TeamLogo.tsx` render them with a placeholder fallback. ESPN is unreachable
-  from the web/CI sandbox, so the manifest must be generated where egress is
-  allowed (see the logos bug in the backlog).
+- Team logos are build-time: `app/scripts/fetch-logos.mjs` fetches from ESPN and
+  writes `src/data/teamLogos.json` + `public/logos/` (both under `app/`);
+  `src/lib/logos.ts` / `TeamLogo.tsx` render them with a placeholder fallback.
+  ESPN is unreachable from the web/CI sandbox, so the manifest must be
+  generated where egress is allowed (see the logos bug in the backlog).
 
 ## Build / tests
-- `npm run lint` → `tsc --noEmit`
-- `npm run test` → Vitest unit tests (`src/lib/__tests__/`, jsdom env via
-  `vitest.config.ts` / `src/test/setup.ts`). Currently covers the pure logic
-  in `lib/odds.ts`, `lib/logos.ts`, and `lib/api.ts` (fetch mocked).
-- `npm run build` → `tsc && vite build`
+- `npm run lint` → `tsc --noEmit` (in `app/`)
+- `npm run test` → Vitest unit tests (`app/src/lib/__tests__/`, jsdom env via
+  `app/vitest.config.ts` / `app/src/test/setup.ts`). Currently covers the pure
+  logic in `lib/odds.ts`, `lib/logos.ts`, and `lib/api.ts` (fetch mocked).
+- `npm run build` → `tsc && vite build` (outputs to `app/dist/all-odds`)
 - `npm run verify` runs all three (lint → test → build) — the single
-  command an agent or CI should run to validate a change.
+  command an agent or CI should run to validate a change. All of these are
+  root-level scripts that delegate to the `app` workspace (`npm run <script>
+  -w app`); running them from the repo root or from `app/` behaves the same.
 - CI (`.github/workflows/firebase-hosting-pull-request.yml`) runs
   `npm ci && npm run verify` on every PR and deploys a preview. "Tests pass" /
   "green" means this check succeeds.
 - Pinned `typescript@5.5.4`. If the environment's global TypeScript is newer it
   surfaces an unrelated `tsconfig` `baseUrl` deprecation error — run
-  `npm install --no-save typescript@5.5.4` first to typecheck against the pin.
+  `npm install --no-save typescript@5.5.4 -w app` first to typecheck against
+  the pin.
 
 ## Local dev / verifying the UI
 - `npm run dev` (Vite, port 4200) or `npm run preview` after a build. Built

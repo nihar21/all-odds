@@ -6,8 +6,8 @@ data sources (today: [the-odds-api.com](https://the-odds-api.com/); planned:
 ESPN team/logos — #16, and historical/opening-closing odds — #13) so the client
 never calls third-party APIs or holds their keys.
 
-This package is intentionally separate from the root Vite app (its own
-`package.json`), so the existing Firebase Hosting build is unaffected.
+This package is intentionally separate from the front-end app in `../app`
+(its own `package.json`), so the existing Firebase Hosting build is unaffected.
 
 ## Why a backend
 
@@ -26,13 +26,13 @@ This package is intentionally separate from the root Vite app (its own
 ## Layout
 
 ```
-server/
+api/
   src/
     index.ts                # Apollo standalone bootstrap (loads SDL at runtime)
     schema.graphql          # GraphQL contract (source of truth)
     config.ts               # env-driven config (API key, cache TTLs, port)
     context.ts              # per-request context (shared OddsApi instance)
-    env.ts                  # loads server/.env before config is read
+    env.ts                  # loads api/.env before config is read
     cache.ts                # TTL cache w/ single-flight de-duplication
     datasources/
       oddsApi.ts            # the-odds-api client: caching + rate-limit -> typed errors
@@ -60,16 +60,16 @@ Upstream failures surface as typed errors via `extensions.code`:
 ## Local development
 
 ```bash
-cd server
+cd api
 npm install
 cp .env.example .env        # optional — set ODDS_API_KEY for a private key
 npm run dev                  # tsx watch, http://localhost:4000/
 ```
 
-Then point the front-end at it (from the repo root):
+Then point the front-end at it (from `app/`):
 
 ```bash
-# repo root
+cd app
 echo "VITE_GRAPHQL_URL=http://localhost:4000/" >> .env
 npm run dev                  # Vite on :4200, now sourcing leagues via GraphQL
 ```
