@@ -76,4 +76,6 @@ export interface BookmakerInfo {
   title: string;
   /** Public web URL for the sportsbook, if known. Omitted for books we don't have a link for. */
   url?: string;
+  /** Root-absolute path to a bundled logo asset, if known. Omitted for books we don't have one for. */
+  logo?: string;
 }

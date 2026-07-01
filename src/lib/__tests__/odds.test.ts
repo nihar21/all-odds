@@ -217,6 +217,18 @@ describe('bookColumns', () => {
     });
     expect(bookColumns(event).map((c) => c.key)).toEqual(['fanduel', 'some_new_book']);
   });
+
+  it('carries a bundled logo path for known books and omits it for unknown ones', () => {
+    const event = makeEvent({
+      bookmakers: [
+        { key: 'fanduel', title: 'FanDuel', last_update: '', markets: [] },
+        { key: 'some_new_book', title: 'Some New Book', last_update: '', markets: [] },
+      ],
+    });
+    const columns = bookColumns(event);
+    expect(columns.find((c) => c.key === 'fanduel')?.logo).toBe('/logos/books/fanduel.svg');
+    expect(columns.find((c) => c.key === 'some_new_book')?.logo).toBeUndefined();
+  });
 });
 
 describe('getOutcome', () => {

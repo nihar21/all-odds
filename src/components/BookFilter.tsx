@@ -10,6 +10,7 @@ import {
 } from 'react-aria-components';
 import { BOOKMAKERS } from '../constants';
 import { useFavoriteBooks } from '../hooks/useFavoriteBooks';
+import { BookLogo } from './BookLogo';
 
 interface BookFilterProps {
   label?: string;
@@ -112,7 +113,10 @@ export function BookFilter({ label, size = 'md' }: BookFilterProps) {
               >
                 {({ isSelected }) => (
                   <>
-                    <span>{book.title}</span>
+                    <span className="flex items-center gap-2">
+                      <BookLogo title={book.title} src={book.logo} size={18} decorative />
+                      {book.title}
+                    </span>
                     <svg
                       viewBox="0 0 24 24"
                       className={`h-4 w-4 shrink-0 ${isSelected ? 'text-accent-soft' : 'text-slate-600'}`}

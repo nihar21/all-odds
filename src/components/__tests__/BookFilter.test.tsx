@@ -64,14 +64,21 @@ describe('BookFilter + OddsTable favorites sync', () => {
   it('narrows the odds table live when a favorite is toggled, with no reload', async () => {
     const user = userEvent.setup();
     const { container } = renderFilterAndTable();
+    // Column headers now render each book's logo (see #65), so their text is
+    // no longer part of `textContent`; check the header image's `alt`
+    // instead. (Direct DOM queries, not `getByRole`, because react-aria's
+    // popover marks the rest of the page `aria-hidden` while open, which
+    // would hide the table from accessibility-tree-based role queries.)
+    const headerBook = (title: string) =>
+      container.querySelector(`th[scope="col"] img[alt="${title}"]`);
 
-    expect(container.querySelector('table')?.textContent).toContain('DraftKings');
+    expect(headerBook('DraftKings')).toBeInTheDocument();
 
     await user.click(screen.getByRole('button', { name: 'Sportsbooks' }));
     await user.click(screen.getByRole('option', { name: 'FanDuel' }));
 
-    expect(container.querySelector('table')?.textContent).not.toContain('DraftKings');
-    expect(container.querySelector('table')?.textContent).toContain('FanDuel');
+    expect(headerBook('DraftKings')).not.toBeInTheDocument();
+    expect(headerBook('FanDuel')).toBeInTheDocument();
   });
 
   it('keeps the selected favorite when the popover is dismissed with Escape', async () => {
@@ -87,7 +94,45 @@ describe('BookFilter + OddsTable favorites sync', () => {
     // dismiss the popover (a natural way to close it), reverting the table
     // to showing every book.
     expect(getFavoriteBooks()).toEqual(['fanduel']);
-    expect(container.querySelector('table')?.textContent).not.toContain('DraftKings');
+    expect(container.querySelector('th[scope="col"] img[alt="DraftKings"]')).not.toBeInTheDocument();
     expect(screen.queryByRole('option', { name: 'FanDuel' })).not.toBeInTheDocument();
+  });
+});
+
+describe('OddsTable header fallback for books with no bundled logo', () => {
+  beforeEach(() => {
+    clearFavoriteBooks();
+  });
+
+  it('renders the plain-text title for a bookmaker outside the curated BOOKMAKERS/logo list', () => {
+    const eventWithUnknownBook: OddsEvent = {
+      ...event,
+      bookmakers: [
+        ...event.bookmakers,
+        {
+          key: 'some_new_book',
+          title: 'Some New Book',
+          last_update: new Date().toISOString(),
+          markets: [
+            {
+              key: 'h2h',
+              last_update: new Date().toISOString(),
+              outcomes: [
+                { name: 'Lakers', price: -140 },
+                { name: 'Celtics', price: 120 },
+              ],
+            },
+          ],
+        },
+      ],
+    };
+    const { container } = render(<OddsTable event={eventWithUnknownBook} market="h2h" />);
+
+    // Known books (bundled logo) render an <img>; unknown books fall back to
+    // the plain-text title, inside the real table header markup (not just
+    // BookLogo in isolation).
+    expect(container.querySelector('th[scope="col"] img[alt="FanDuel"]')).toBeInTheDocument();
+    expect(container.querySelector('th[scope="col"] img[alt="Some New Book"]')).not.toBeInTheDocument();
+    expect(screen.getByText('Some New Book')).toBeInTheDocument();
   });
 });
