@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import type { MarketKey, OddsEvent } from '../types';
 import {
   bestBooksForRow,
@@ -10,6 +10,8 @@ import {
   isLive,
   latestMarketUpdate,
   rowsForMarket,
+  sortRows,
+  type OddsSort,
 } from '../lib/odds';
 import { useFavoriteBooks } from '../hooks/useFavoriteBooks';
 import { useOddsFormat } from '../hooks/useOddsFormat';
@@ -17,6 +19,53 @@ import { useOddsFormat } from '../hooks/useOddsFormat';
 interface OddsTableProps {
   event: OddsEvent;
   market: MarketKey;
+}
+
+function SortableHeader({
+  label,
+  sortKey,
+  sort,
+  onToggle,
+  thClassName,
+  buttonClassName,
+}: {
+  label: string;
+  sortKey: OddsSort['key'];
+  sort: OddsSort | null;
+  onToggle: (key: OddsSort['key']) => void;
+  thClassName: string;
+  buttonClassName: string;
+}) {
+  const active = sort?.key === sortKey;
+  return (
+    <th
+      scope="col"
+      aria-sort={active ? (sort!.dir === 'asc' ? 'ascending' : 'descending') : 'none'}
+      className={thClassName}
+    >
+      <button type="button" onClick={() => onToggle(sortKey)} className={buttonClassName}>
+        {label}
+        {active && <SortArrow dir={sort!.dir} />}
+      </button>
+    </th>
+  );
+}
+
+function SortArrow({ dir }: { dir: 'asc' | 'desc' }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      className="h-3 w-3"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={3}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <path d={dir === 'asc' ? 'm6 15 6-6 6 6' : 'm6 9 6 6 6-6'} />
+    </svg>
+  );
 }
 
 export function OddsTable({ event, market }: OddsTableProps) {
@@ -27,12 +76,44 @@ export function OddsTable({ event, market }: OddsTableProps) {
     [event, favorites],
   );
   const rows = useMemo(() => rowsForMarket(event, market), [event, market]);
+  const [sort, setSort] = useState<OddsSort | null>(null);
+
+  // Reset the sort synchronously during render — rather than in an Effect —
+  // so a market change never paints a frame with the old market's sort still
+  // applied. Tracked with state (not a ref): mutating a ref during render is
+  // not idempotent under StrictMode's double-invoke, which caused the reset
+  // to silently lose to a stale second render pass.
+  const [prevMarket, setPrevMarket] = useState(market);
+  if (market !== prevMarket) {
+    setPrevMarket(market);
+    if (sort !== null) setSort(null);
+  } else if (
+    sort &&
+    sort.key !== 'outcome' &&
+    !columns.some((col) => col.key === sort.key)
+  ) {
+    setSort(null);
+  }
+
+  function toggleSort(key: OddsSort['key']) {
+    setSort((prev) => {
+      if (!prev || prev.key !== key) return { key, dir: 'asc' };
+      if (prev.dir === 'asc') return { key, dir: 'desc' };
+      return null;
+    });
+  }
+
+  const sortedRows = useMemo(
+    () => sortRows(rows, event, market, sort),
+    [rows, sort, event, market],
+  );
+
   const best = useMemo(
     () =>
-      rows.map((row) =>
+      sortedRows.map((row) =>
         bestBooksForRow(event, market, row.outcomeName, columns),
       ),
-    [event, market, rows, columns],
+    [event, market, sortedRows, columns],
   );
   const live = isLive(event.commence_time);
   const updated = useMemo(
@@ -72,25 +153,29 @@ export function OddsTable({ event, market }: OddsTableProps) {
         <table className="w-full border-separate border-spacing-0 text-sm">
           <thead>
             <tr>
-              <th
-                scope="col"
-                className="sticky left-0 z-10 min-w-[9rem] rounded-tl-xl bg-ink-800/95 px-4 py-2.5 text-left text-xs font-semibold uppercase tracking-wide text-slate-400 backdrop-blur"
-              >
-                Outcome
-              </th>
+              <SortableHeader
+                label="Outcome"
+                sortKey="outcome"
+                sort={sort}
+                onToggle={toggleSort}
+                thClassName="sticky left-0 z-10 min-w-[9rem] rounded-tl-xl bg-ink-800/95 px-4 py-2.5 text-left text-xs font-semibold uppercase tracking-wide text-slate-400 backdrop-blur"
+                buttonClassName="flex items-center gap-1 uppercase tracking-wide hover:text-slate-200"
+              />
               {columns.map((col) => (
-                <th
-                  scope="col"
+                <SortableHeader
                   key={col.key}
-                  className="min-w-[5.5rem] border-b border-white/10 bg-ink-800/60 px-3 py-2.5 text-center text-xs font-semibold text-slate-300"
-                >
-                  {col.title}
-                </th>
+                  label={col.title}
+                  sortKey={col.key}
+                  sort={sort}
+                  onToggle={toggleSort}
+                  thClassName="min-w-[5.5rem] border-b border-white/10 bg-ink-800/60 px-3 py-2.5 text-center text-xs font-semibold text-slate-300"
+                  buttonClassName="flex w-full items-center justify-center gap-1 hover:text-slate-100"
+                />
               ))}
             </tr>
           </thead>
           <tbody>
-            {rows.map((row, ri) => (
+            {sortedRows.map((row, ri) => (
               <tr key={row.outcomeName} className="group">
                 <th
                   scope="row"
