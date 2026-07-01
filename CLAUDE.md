@@ -36,6 +36,11 @@ live view.
   queries; it returns a bounded set (live + next games), not an exhaustive list.
 - Reuse `BOOKMAKERS` ordering and `sportIcon()` from `constants.ts` rather than
   hardcoding book/sport display details.
+- Team logos are build-time: `scripts/fetch-logos.mjs` fetches from ESPN and
+  writes `src/data/teamLogos.json` + `public/logos/`; `src/lib/logos.ts` /
+  `TeamLogo.tsx` render them with a placeholder fallback. ESPN is unreachable
+  from the web/CI sandbox, so the manifest must be generated where egress is
+  allowed (see the logos bug in the backlog).
 
 ## Build / tests
 - `npm run lint` → `tsc --noEmit`
@@ -65,7 +70,10 @@ live view.
 When asked to implement a feature or a GitHub issue, run this end-to-end
 without waiting for further prompting, except at the explicit checkpoint noted:
 
-1. **Implement** the change on the designated feature branch.
+1. **Implement** the change on the designated feature branch. Before starting,
+   **branch from the latest `origin/main`** (or rebase) so you're not working
+   against stale code — investigating/building on an out-of-date branch produces
+   wrong conclusions and duplicate tickets.
 2. **Verify locally**: `npm run build` must pass (clean `tsc` + Vite build).
 3. **Open a PR** against `main` (unless a PR for the branch already exists, in
    which case push to update it).
@@ -85,3 +93,27 @@ If a review finding is ambiguous or implies a large refactor, ask before acting
 rather than guessing. Never merge while CI is failing or findings are
 unresolved. This workflow is for code features/issues; skip the code-review step
 for docs-only or config-only changes (there is nothing executable to review).
+
+## Tracking issue state (standing rule)
+
+Keep GitHub issue state in sync with reality so the backlog is trustworthy and
+we never duplicate shipped work:
+
+1. **Before filing or starting**, search the backlog (open **and** closed) for
+   an existing issue. Work against it instead of opening a duplicate.
+2. **When work begins**, mark the issue **In Progress**.
+3. **When merged/shipped**, **close** the issue and reference the PR. Don't
+   leave shipped work open.
+4. A follow-up to an already-shipped issue is a **new** enhancement that
+   cross-references the original — don't reopen merged work.
+
+> Motivation: we previously nearly re-specced a shipped feature, and a bug was
+> misdiagnosed off a stale branch, because state wasn't tracked. Keeping states
+> current prevents both.
+
+**State mechanism:** GitHub issues are natively only open/closed. For richer
+states (Backlog → In Progress → In Review → Done) use either `status:` labels
+(e.g. `status: in-progress`, `status: in-review` — an agent can apply/swap these
+via the API) or a GitHub Projects (v2) board with a Status field. As of this
+writing only `bug` and `enhancement` labels exist — set up one of the above
+before relying on automated state tracking.
