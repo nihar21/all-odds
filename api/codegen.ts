@@ -4,7 +4,7 @@ import type { CodegenConfig } from '@graphql-codegen/cli';
  * Generates strongly-typed resolver signatures from `schema.graphql` so the
  * resolver map is checked against the contract at build time. The same schema
  * file is the source of truth for the front-end's operation types
- * (see ../codegen.ts at the repo root), keeping FE and BE in lockstep.
+ * (see ../app/codegen.ts), keeping FE and BE in lockstep.
  */
 const config: CodegenConfig = {
   schema: './src/schema.graphql',
