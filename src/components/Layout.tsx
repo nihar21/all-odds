@@ -88,6 +88,10 @@ export function Layout({ children }: LayoutProps) {
             the-odds-api
           </a>
           . 21+. Please gamble responsibly.
+          <span className="mx-2 text-slate-700">·</span>
+          <span className="text-slate-600">
+            v{__APP_VERSION__} · {__COMMIT_HASH__}
+          </span>
         </div>
       </footer>
     </div>
