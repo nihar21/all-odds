@@ -18,7 +18,7 @@ import {
   today,
   type CalendarDate,
 } from '@internationalized/date';
-import { formatDateLabel } from '../lib/odds';
+import { formatDateLabel, todayKey as getTodayKey } from '../lib/odds';
 
 /** Sentinel key for the "All days" option (no date filter). */
 export const ALL_DAYS = '__all__';
@@ -52,6 +52,10 @@ function Chevron({ dir }: { dir: 'left' | 'right' }) {
 const arrowClass =
   'grid w-9 shrink-0 place-items-center rounded-xl border border-white/10 bg-ink-800/80 text-slate-300 outline-none transition hover:border-white/20 hover:bg-ink-700/80 data-[focus-visible]:ring-2 data-[focus-visible]:ring-accent/70 disabled:cursor-not-allowed disabled:opacity-30 disabled:hover:border-white/10 disabled:hover:bg-ink-800/80';
 
+/** Shared style for the "Today" / "All days" quick-action buttons in the calendar popover. */
+const popoverActionClass =
+  'flex-1 rounded-lg border border-white/10 px-3 py-2 text-sm font-medium text-slate-300 outline-none transition hover:border-white/20 hover:bg-white/5 data-[focus-visible]:ring-2 data-[focus-visible]:ring-accent/70 aria-pressed:text-accent disabled:cursor-not-allowed disabled:opacity-30 disabled:hover:border-white/10 disabled:hover:bg-transparent';
+
 /**
  * Traditional month-calendar date picker with prev/next day arrows. Days that
  * have events are selectable; days without are dimmed and disabled. The center
@@ -80,7 +84,7 @@ export function DatePicker({ dates, value, onChange, label }: DatePickerProps) {
 
   const availableSet = new Set(dates);
 
-  const todayKey = today(getLocalTimeZone()).toString();
+  const todayKey = getTodayKey();
   const hasToday = availableSet.has(todayKey);
   const isToday = value === todayKey;
 
@@ -95,7 +99,7 @@ export function DatePicker({ dates, value, onChange, label }: DatePickerProps) {
         <button
           type="button"
           onClick={goToday}
-          className="self-start rounded-full border border-white/10 bg-ink-800/80 px-2.5 py-0.5 text-xs font-medium text-accent outline-none transition hover:border-white/20 hover:bg-ink-700/80 data-[focus-visible]:ring-2 data-[focus-visible]:ring-accent/70"
+          className="pill self-start text-accent outline-none transition hover:border-white/20 hover:bg-white/10 data-[focus-visible]:ring-2 data-[focus-visible]:ring-accent/70"
         >
           Today
         </button>
@@ -192,7 +196,7 @@ export function DatePicker({ dates, value, onChange, label }: DatePickerProps) {
                   onClick={goToday}
                   disabled={!hasToday}
                   title={!hasToday ? 'No events today' : undefined}
-                  className="flex-1 rounded-lg border border-white/10 px-3 py-2 text-sm font-medium text-slate-300 outline-none transition hover:border-white/20 hover:bg-white/5 data-[focus-visible]:ring-2 data-[focus-visible]:ring-accent/70 aria-pressed:text-accent disabled:cursor-not-allowed disabled:opacity-30 disabled:hover:border-white/10 disabled:hover:bg-transparent"
+                  className={popoverActionClass}
                   aria-pressed={isToday}
                 >
                   Today
@@ -203,7 +207,7 @@ export function DatePicker({ dates, value, onChange, label }: DatePickerProps) {
                     onChange(ALL_DAYS);
                     setOpen(false);
                   }}
-                  className="flex-1 rounded-lg border border-white/10 px-3 py-2 text-sm font-medium text-slate-300 outline-none transition hover:border-white/20 hover:bg-white/5 data-[focus-visible]:ring-2 data-[focus-visible]:ring-accent/70 aria-pressed:text-accent"
+                  className={popoverActionClass}
                   aria-pressed={value === ALL_DAYS}
                 >
                   All days
