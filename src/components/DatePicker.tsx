@@ -80,8 +80,26 @@ export function DatePicker({ dates, value, onChange, label }: DatePickerProps) {
 
   const availableSet = new Set(dates);
 
+  const todayKey = today(getLocalTimeZone()).toString();
+  const hasToday = availableSet.has(todayKey);
+  const isToday = value === todayKey;
+
+  const goToday = () => {
+    onChange(todayKey);
+    setOpen(false);
+  };
+
   return (
     <div className="flex flex-col gap-1.5">
+      {hasToday && !isToday && (
+        <button
+          type="button"
+          onClick={goToday}
+          className="self-start rounded-full border border-white/10 bg-ink-800/80 px-2.5 py-0.5 text-xs font-medium text-accent outline-none transition hover:border-white/20 hover:bg-ink-700/80 data-[focus-visible]:ring-2 data-[focus-visible]:ring-accent/70"
+        >
+          Today
+        </button>
+      )}
       {label && (
         <span className="text-xs font-medium uppercase tracking-wide text-slate-400">
           {label}
@@ -168,17 +186,29 @@ export function DatePicker({ dates, value, onChange, label }: DatePickerProps) {
                 </CalendarGrid>
               </Calendar>
 
-              <button
-                type="button"
-                onClick={() => {
-                  onChange(ALL_DAYS);
-                  setOpen(false);
-                }}
-                className="mt-2 w-full rounded-lg border border-white/10 px-3 py-2 text-sm font-medium text-slate-300 outline-none transition hover:border-white/20 hover:bg-white/5 data-[focus-visible]:ring-2 data-[focus-visible]:ring-accent/70 aria-pressed:text-accent"
-                aria-pressed={value === ALL_DAYS}
-              >
-                All days
-              </button>
+              <div className="mt-2 flex gap-2">
+                <button
+                  type="button"
+                  onClick={goToday}
+                  disabled={!hasToday}
+                  title={!hasToday ? 'No events today' : undefined}
+                  className="flex-1 rounded-lg border border-white/10 px-3 py-2 text-sm font-medium text-slate-300 outline-none transition hover:border-white/20 hover:bg-white/5 data-[focus-visible]:ring-2 data-[focus-visible]:ring-accent/70 aria-pressed:text-accent disabled:cursor-not-allowed disabled:opacity-30 disabled:hover:border-white/10 disabled:hover:bg-transparent"
+                  aria-pressed={isToday}
+                >
+                  Today
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    onChange(ALL_DAYS);
+                    setOpen(false);
+                  }}
+                  className="flex-1 rounded-lg border border-white/10 px-3 py-2 text-sm font-medium text-slate-300 outline-none transition hover:border-white/20 hover:bg-white/5 data-[focus-visible]:ring-2 data-[focus-visible]:ring-accent/70 aria-pressed:text-accent"
+                  aria-pressed={value === ALL_DAYS}
+                >
+                  All days
+                </button>
+              </div>
             </Dialog>
           </Popover>
         </DialogTrigger>
