@@ -353,3 +353,82 @@ export function formatDateLabel(key: string): string {
     day: 'numeric',
   });
 }
+
+/** A contiguous, anchorable group of events for the scroll-spy table-of-contents bar. */
+export interface EventSection {
+  /** DOM id the section's heading anchors to (no colons, safe for id/href use). */
+  id: string;
+  /** Pill label shown in the table-of-contents bar. */
+  label: string;
+  events: OddsEvent[];
+}
+
+/**
+ * Groups already-time-sorted events into per-local-day sections, in the order
+ * days first appear (i.e. chronological, since the input is pre-sorted).
+ */
+export function sectionsByDate(events: OddsEvent[]): EventSection[] {
+  const order: string[] = [];
+  const groups = new Map<string, OddsEvent[]>();
+  for (const event of events) {
+    const key = dateKey(event.commence_time);
+    const group = groups.get(key);
+    if (group) group.push(event);
+    else {
+      groups.set(key, [event]);
+      order.push(key);
+    }
+  }
+  return order.map((key) => ({
+    id: `date-${key}`,
+    label: formatDateLabel(key),
+    events: groups.get(key)!,
+  }));
+}
+
+/** Local `HH:mm` (24h) key for an event's start time, for grouping same-time events. */
+export function timeKey(iso: string): string {
+  const date = new Date(iso);
+  const h = String(date.getHours()).padStart(2, '0');
+  const m = String(date.getMinutes()).padStart(2, '0');
+  return `${h}:${m}`;
+}
+
+/** Friendly local time label (e.g. "7:00 PM") for a `timeKey`-formatted `HH:mm` key. */
+export function formatTimeLabel(key: string): string {
+  const [h, m] = key.split(':').map(Number);
+  const date = new Date();
+  date.setHours(h, m, 0, 0);
+  return date.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' });
+}
+
+/**
+ * Groups already-time-sorted events (assumed to be within a single day) into
+ * per-start-time sections, in the order times first appear.
+ */
+export function sectionsByTime(events: OddsEvent[]): EventSection[] {
+  const order: string[] = [];
+  const groups = new Map<string, OddsEvent[]>();
+  for (const event of events) {
+    const key = timeKey(event.commence_time);
+    const group = groups.get(key);
+    if (group) group.push(event);
+    else {
+      groups.set(key, [event]);
+      order.push(key);
+    }
+  }
+  return order.map((key) => ({
+    id: `time-${key.replace(':', '')}`,
+    label: formatTimeLabel(key),
+    events: groups.get(key)!,
+  }));
+}
+
+/** Slugifies a title into a DOM-id-safe string (lowercase, alphanumeric, hyphenated). */
+export function slugify(title: string): string {
+  return title
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+}

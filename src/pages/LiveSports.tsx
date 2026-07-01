@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react';
 import { getUpcomingOdds } from '../lib/api';
 import { useAsync } from '../hooks/useAsync';
 import { useLiveScores } from '../hooks/useLiveScores';
-import { isLive } from '../lib/odds';
+import { isLive, slugify } from '../lib/odds';
 import type { MarketKey, OddsEvent } from '../types';
 import { Breadcrumbs } from '../components/Breadcrumbs';
 import { EventListSkeleton } from '../components/Skeleton';
@@ -10,8 +10,10 @@ import { ErrorView } from '../components/ErrorView';
 import { MarketSelect } from '../components/MarketSelect';
 import { BookFilter } from '../components/BookFilter';
 import { EventCard } from '../components/EventCard';
+import { SectionNav } from '../components/SectionNav';
 
 interface SportGroup {
+  id: string;
   title: string;
   events: OddsEvent[];
 }
@@ -42,10 +44,17 @@ export function LiveSports() {
       if (list) list.push(event);
       else bySport.set(title, [event]);
     }
-    return Array.from(bySport, ([title, events]) => ({ title, events })).sort(
-      (a, b) => a.title.localeCompare(b.title),
-    );
+    return Array.from(bySport, ([title, events]) => ({
+      id: `sport-${slugify(title)}`,
+      title,
+      events,
+    })).sort((a, b) => a.title.localeCompare(b.title));
   }, [data]);
+
+  const sectionNavItems = useMemo(
+    () => groups.map((g) => ({ id: g.id, label: g.title })),
+    [groups],
+  );
 
   const liveCount = useMemo(
     () => groups.reduce((sum, g) => sum + g.events.length, 0),
@@ -127,28 +136,31 @@ export function LiveSports() {
       )}
 
       {!loading && !error && liveCount > 0 && (
-        <div className="space-y-8">
-          {groups.map((group) => (
-            <section key={group.title}>
-              <h2 className="mb-3 font-display text-sm font-semibold uppercase tracking-wide text-slate-400">
-                {group.title}
-              </h2>
-              <div className="space-y-5">
-                {group.events.map((event) => (
-                  <EventCard
-                    key={event.id}
-                    event={event}
-                    market={perEvent[event.id] ?? master}
-                    onMarketChange={(m) =>
-                      setPerEvent((prev) => ({ ...prev, [event.id]: m }))
-                    }
-                    score={scores.get(event.id)}
-                  />
-                ))}
-              </div>
-            </section>
-          ))}
-        </div>
+        <>
+          <SectionNav items={sectionNavItems} />
+          <div className="space-y-8">
+            {groups.map((group) => (
+              <section key={group.id} id={group.id}>
+                <h2 className="mb-3 font-display text-sm font-semibold uppercase tracking-wide text-slate-400">
+                  {group.title}
+                </h2>
+                <div className="space-y-5">
+                  {group.events.map((event) => (
+                    <EventCard
+                      key={event.id}
+                      event={event}
+                      market={perEvent[event.id] ?? master}
+                      onMarketChange={(m) =>
+                        setPerEvent((prev) => ({ ...prev, [event.id]: m }))
+                      }
+                      score={scores.get(event.id)}
+                    />
+                  ))}
+                </div>
+              </section>
+            ))}
+          </div>
+        </>
       )}
     </div>
   );
