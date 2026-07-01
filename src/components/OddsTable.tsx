@@ -1,5 +1,7 @@
 import { useMemo, useState } from 'react';
+import type { ReactNode } from 'react';
 import type { MarketKey, OddsEvent } from '../types';
+import { BookLogo } from './BookLogo';
 import {
   bestBooksForRow,
   bookColumns,
@@ -29,7 +31,7 @@ function SortableHeader({
   thClassName,
   buttonClassName,
 }: {
-  label: string;
+  label: ReactNode;
   sortKey: OddsSort['key'];
   sort: OddsSort | null;
   onToggle: (key: OddsSort['key']) => void;
@@ -164,7 +166,7 @@ export function OddsTable({ event, market }: OddsTableProps) {
               {columns.map((col) => (
                 <SortableHeader
                   key={col.key}
-                  label={col.title}
+                  label={<BookLogo title={col.title} src={col.logo} size={22} />}
                   sortKey={col.key}
                   sort={sort}
                   onToggle={toggleSort}

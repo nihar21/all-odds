@@ -64,14 +64,21 @@ describe('BookFilter + OddsTable favorites sync', () => {
   it('narrows the odds table live when a favorite is toggled, with no reload', async () => {
     const user = userEvent.setup();
     const { container } = renderFilterAndTable();
+    // Column headers now render each book's logo (see #65), so their text is
+    // no longer part of `textContent`; check the header image's `alt`
+    // instead. (Direct DOM queries, not `getByRole`, because react-aria's
+    // popover marks the rest of the page `aria-hidden` while open, which
+    // would hide the table from accessibility-tree-based role queries.)
+    const headerBook = (title: string) =>
+      container.querySelector(`th[scope="col"] img[alt="${title}"]`);
 
-    expect(container.querySelector('table')?.textContent).toContain('DraftKings');
+    expect(headerBook('DraftKings')).toBeInTheDocument();
 
     await user.click(screen.getByRole('button', { name: 'Sportsbooks' }));
     await user.click(screen.getByRole('option', { name: 'FanDuel' }));
 
-    expect(container.querySelector('table')?.textContent).not.toContain('DraftKings');
-    expect(container.querySelector('table')?.textContent).toContain('FanDuel');
+    expect(headerBook('DraftKings')).not.toBeInTheDocument();
+    expect(headerBook('FanDuel')).toBeInTheDocument();
   });
 
   it('keeps the selected favorite when the popover is dismissed with Escape', async () => {
@@ -87,7 +94,7 @@ describe('BookFilter + OddsTable favorites sync', () => {
     // dismiss the popover (a natural way to close it), reverting the table
     // to showing every book.
     expect(getFavoriteBooks()).toEqual(['fanduel']);
-    expect(container.querySelector('table')?.textContent).not.toContain('DraftKings');
+    expect(container.querySelector('th[scope="col"] img[alt="DraftKings"]')).not.toBeInTheDocument();
     expect(screen.queryByRole('option', { name: 'FanDuel' })).not.toBeInTheDocument();
   });
 });

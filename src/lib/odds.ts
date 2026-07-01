@@ -53,6 +53,8 @@ export interface BookColumn {
   title: string;
   /** Public web URL for the sportsbook, if known. */
   url?: string;
+  /** Root-absolute path to a bundled logo asset, if known. */
+  logo?: string;
 }
 
 /**
@@ -71,6 +73,7 @@ export function bookColumns(
     key: b.key,
     title: b.title,
     url: b.url,
+    logo: b.logo,
   }));
   // Include any books returned by the API that aren't in our preferred list.
   const known = new Set(ordered.map((b) => b.key));
@@ -80,6 +83,7 @@ export function bookColumns(
         key: b.key,
         title: BOOKMAKER_TITLES[b.key] ?? b.title,
         url: undefined,
+        logo: undefined,
       });
     }
   }
