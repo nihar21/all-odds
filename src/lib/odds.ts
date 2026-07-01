@@ -262,6 +262,44 @@ export function isLive(iso: string): boolean {
 }
 
 /**
+ * The most recent `last_update` timestamp across `bookKeys`' postings of
+ * `market` for this event, or null if none carry that market. Surfaces how
+ * fresh the *live* odds are, since (per the in-memory, no-TTL response cache
+ * in `lib/api.ts`) the table itself does not auto-refresh mid-session.
+ *
+ * `bookKeys` should match whatever books are actually rendered (e.g. the
+ * caller's `bookColumns(event, favorites)` output) — otherwise the freshness
+ * shown can come from a book the user isn't even seeing odds for.
+ */
+export function latestMarketUpdate(
+  event: OddsEvent,
+  market: MarketKey,
+  bookKeys: ReadonlySet<string>,
+): string | null {
+  let latest: string | null = null;
+  for (const book of event.bookmakers) {
+    if (!bookKeys.has(book.key)) continue;
+    const m = book.markets.find((mkt) => mkt.key === market);
+    if (!m?.last_update) continue;
+    if (!latest || new Date(m.last_update).getTime() > new Date(latest).getTime()) {
+      latest = m.last_update;
+    }
+  }
+  return latest;
+}
+
+/** Friendly "Xs/Xm/Xh ago" label for a past ISO timestamp. */
+export function formatRelativeTime(iso: string): string {
+  const seconds = Math.max(0, Math.floor((Date.now() - new Date(iso).getTime()) / 1000));
+  if (seconds < 10) return 'just now';
+  if (seconds < 60) return `${seconds}s ago`;
+  const minutes = Math.floor(seconds / 60);
+  if (minutes < 60) return `${minutes}m ago`;
+  const hours = Math.floor(minutes / 60);
+  return `${hours}h ago`;
+}
+
+/**
  * The score string for a given team within a `ScoreEvent`, matched by team name
  * (the `/scores` payload keys scores by `name`). Returns null when there's no
  * score event, no team, or no matching entry yet (scores are empty pre-game).
