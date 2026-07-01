@@ -20,6 +20,7 @@ import {
   sectionsByDate,
   sectionsByTime,
   slugify,
+  sortRows,
   timeKey,
 } from '../odds';
 
@@ -68,12 +69,20 @@ describe('formatPoint', () => {
 });
 
 describe('decimalOdds', () => {
-  it('converts a positive American price to decimal odds', () => {
+  it('converts positive American prices', () => {
     expect(decimalOdds(150)).toBeCloseTo(2.5);
+    expect(decimalOdds(100)).toBeCloseTo(2);
   });
 
-  it('converts a negative American price to decimal odds', () => {
+  it('converts negative American prices', () => {
     expect(decimalOdds(-200)).toBeCloseTo(1.5);
+    expect(decimalOdds(-110)).toBeCloseTo(1.909, 3);
+  });
+
+  it('orders a bigger favorite below a smaller favorite/underdog', () => {
+    // Raw American numbers would misorder these (-200 > +150 numerically),
+    // but -200 is the shorter (worse-paying) favorite.
+    expect(decimalOdds(-200)).toBeLessThan(decimalOdds(150));
   });
 });
 
@@ -107,6 +116,79 @@ describe('formatOdds', () => {
     expect(formatOdds(null, 'decimal')).toBe('—');
     expect(formatOdds(undefined, 'percent')).toBe('—');
     expect(formatOdds(NaN, 'american')).toBe('—');
+  });
+});
+
+describe('sortRows', () => {
+  function eventForSort(): OddsEvent {
+    return makeEvent({
+      home_team: 'Home Team',
+      away_team: 'Away Team',
+      bookmakers: [
+        {
+          key: 'fanduel',
+          title: 'FanDuel',
+          last_update: '',
+          markets: [
+            {
+              key: 'h2h',
+              last_update: '',
+              outcomes: [
+                { name: 'Away Team', price: 200 },
+                { name: 'Home Team', price: -150 },
+              ],
+            },
+          ],
+        },
+        {
+          key: 'draftkings',
+          title: 'DraftKings',
+          last_update: '',
+          markets: [
+            {
+              key: 'h2h',
+              last_update: '',
+              // No Away Team price at DraftKings, to exercise the missing-cell case.
+              outcomes: [{ name: 'Home Team', price: -140 }],
+            },
+          ],
+        },
+      ],
+    });
+  }
+
+  it('returns the natural order when sort is null', () => {
+    const event = eventForSort();
+    const rows = rowsForMarket(event, 'h2h');
+    expect(sortRows(rows, event, 'h2h', null)).toEqual(rows);
+  });
+
+  it('sorts by outcome label alphabetically', () => {
+    const event = eventForSort();
+    const rows = rowsForMarket(event, 'h2h');
+    const sorted = sortRows(rows, event, 'h2h', { key: 'outcome', dir: 'asc' });
+    expect(sorted.map((r) => r.label)).toEqual(['Away Team', 'Home Team']);
+    const desc = sortRows(rows, event, 'h2h', { key: 'outcome', dir: 'desc' });
+    expect(desc.map((r) => r.label)).toEqual(['Home Team', 'Away Team']);
+  });
+
+  it('sorts by a book column using true odds value, not raw American price', () => {
+    const event = eventForSort();
+    const rows = rowsForMarket(event, 'h2h');
+    // Ascending = shortest favorite first: -150 (decimal 1.67) before +200 (decimal 3.0).
+    const asc = sortRows(rows, event, 'h2h', { key: 'fanduel', dir: 'asc' });
+    expect(asc.map((r) => r.label)).toEqual(['Home Team', 'Away Team']);
+    const desc = sortRows(rows, event, 'h2h', { key: 'fanduel', dir: 'desc' });
+    expect(desc.map((r) => r.label)).toEqual(['Away Team', 'Home Team']);
+  });
+
+  it('sorts rows with a missing price for the column to the end, in either direction', () => {
+    const event = eventForSort();
+    const rows = rowsForMarket(event, 'h2h');
+    const asc = sortRows(rows, event, 'h2h', { key: 'draftkings', dir: 'asc' });
+    expect(asc.map((r) => r.label)).toEqual(['Home Team', 'Away Team']);
+    const desc = sortRows(rows, event, 'h2h', { key: 'draftkings', dir: 'desc' });
+    expect(desc.map((r) => r.label)).toEqual(['Home Team', 'Away Team']);
   });
 });
 

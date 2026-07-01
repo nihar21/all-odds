@@ -249,6 +249,44 @@ export function bestBooksForRow(
   return winners;
 }
 
+/** A table sort selection: `'outcome'` sorts by row label, anything else is a book key. */
+export interface OddsSort {
+  key: 'outcome' | string;
+  dir: 'asc' | 'desc';
+}
+
+/**
+ * Reorder `rows` per `sort` (null returns them in their natural/default order).
+ * Sorting a book column compares true odds value (via `decimalOdds`), not the
+ * raw American price, so e.g. -200 correctly sorts as shorter than +150. Rows
+ * with no price for the sorted book always sort last, regardless of direction.
+ */
+export function sortRows(
+  rows: OddsRow[],
+  event: OddsEvent,
+  market: MarketKey,
+  sort: OddsSort | null,
+): OddsRow[] {
+  if (!sort) return rows;
+  const dir = sort.dir === 'asc' ? 1 : -1;
+  const valueFor = (row: OddsRow): number | string | null => {
+    if (sort.key === 'outcome') return row.label.toLowerCase();
+    const outcome = getOutcome(event, sort.key, market, row.outcomeName);
+    return outcome ? decimalOdds(outcome.price) : null;
+  };
+  return rows
+    .map((row) => ({ row, value: valueFor(row) }))
+    .sort((a, b) => {
+      if (a.value === null && b.value === null) return 0;
+      if (a.value === null) return 1;
+      if (b.value === null) return -1;
+      if (a.value < b.value) return -dir;
+      if (a.value > b.value) return dir;
+      return 0;
+    })
+    .map((x) => x.row);
+}
+
 /** Headline line for an event under a market (favorite spread / total / pick'em). */
 export function marketSummary(event: OddsEvent, market: MarketKey): string | null {
   const cols = bookColumns(event);
