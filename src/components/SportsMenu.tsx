@@ -132,9 +132,9 @@ export function SportsMenu() {
 
           {!loading && !error && groups.length > 0 && (
             <ul className="max-h-[60vh] overflow-auto p-1">
-              {groups.map((g) => {
+              {groups.map((g, i) => {
                 const expanded = expandedGroup === g.group;
-                const leaguesId = `sportsmenu-leagues-${g.group.replace(/\s+/g, '-').toLowerCase()}`;
+                const leaguesId = `sportsmenu-leagues-${i}`;
                 return (
                   <li key={g.group}>
                     <div className="flex items-center justify-between gap-1 rounded-lg text-sm text-slate-200 transition hover:bg-white/10">
@@ -164,24 +164,23 @@ export function SportsMenu() {
                         <ExpanderChevron expanded={expanded} />
                       </button>
                     </div>
-                    {expanded && (
-                      <ul
-                        id={leaguesId}
-                        className="ml-4 border-l border-white/10 pl-3"
-                      >
-                        {(leaguesByGroup.get(g.group) ?? []).map((league) => (
-                          <li key={league.key}>
-                            <Link
-                              to={`/sport/${encodeURIComponent(g.group)}/league/${league.key}`}
-                              onClick={() => setIsOpen(false)}
-                              className="block truncate rounded-lg px-3 py-1.5 text-sm text-slate-300 outline-none transition hover:bg-white/10 hover:text-white focus-visible:bg-white/10"
-                            >
-                              {league.title}
-                            </Link>
-                          </li>
-                        ))}
-                      </ul>
-                    )}
+                    <ul
+                      id={leaguesId}
+                      hidden={!expanded}
+                      className="ml-4 border-l border-white/10 pl-3"
+                    >
+                      {(leaguesByGroup.get(g.group) ?? []).map((league) => (
+                        <li key={league.key}>
+                          <Link
+                            to={`/sport/${encodeURIComponent(g.group)}/league/${league.key}`}
+                            onClick={() => setIsOpen(false)}
+                            className="block truncate rounded-lg px-3 py-1.5 text-sm text-slate-300 outline-none transition hover:bg-white/10 hover:text-white focus-visible:bg-white/10"
+                          >
+                            {league.title}
+                          </Link>
+                        </li>
+                      ))}
+                    </ul>
                   </li>
                 );
               })}
