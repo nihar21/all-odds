@@ -4,10 +4,28 @@ import { Button, Dialog, DialogTrigger, Popover } from 'react-aria-components';
 import { getSportsList } from '../lib/api';
 import { useAsync } from '../hooks/useAsync';
 import { sportIcon } from '../constants';
+import type { Sport } from '../types';
 
 interface SportGroup {
   group: string;
   leagueCount: number;
+}
+
+function ExpanderChevron({ expanded }: { expanded: boolean }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      className={`h-3.5 w-3.5 shrink-0 transition-transform ${expanded ? 'rotate-180' : ''}`}
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={2.4}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <path d="m6 9 6 6 6-6" />
+    </svg>
+  );
 }
 
 /**
@@ -18,6 +36,7 @@ interface SportGroup {
 export function SportsMenu() {
   const { pathname } = useLocation();
   const [isOpen, setIsOpen] = useState(false);
+  const [expandedGroup, setExpandedGroup] = useState<string | null>(null);
   const { data, loading, error } = useAsync(getSportsList, []);
 
   const groups = useMemo<SportGroup[]>(() => {
@@ -33,9 +52,24 @@ export function SportsMenu() {
     })).sort((a, b) => a.group.localeCompare(b.group));
   }, [data]);
 
+  const leaguesByGroup = useMemo(() => {
+    const map = new Map<string, Sport[]>();
+    for (const sport of data ?? []) {
+      if (!sport.group) continue;
+      const list = map.get(sport.group) ?? [];
+      list.push(sport);
+      map.set(sport.group, list);
+    }
+    for (const list of map.values()) {
+      list.sort((a, b) => a.title.localeCompare(b.title));
+    }
+    return map;
+  }, [data]);
+
   // Close the menu whenever the route changes (e.g. after picking an item).
   useEffect(() => {
     setIsOpen(false);
+    setExpandedGroup(null);
   }, [pathname]);
 
   return (
@@ -98,25 +132,59 @@ export function SportsMenu() {
 
           {!loading && !error && groups.length > 0 && (
             <ul className="max-h-[60vh] overflow-auto p-1">
-              {groups.map((g) => (
-                <li key={g.group}>
-                  <Link
-                    to={`/sport/${encodeURIComponent(g.group)}`}
-                    onClick={() => setIsOpen(false)}
-                    className="flex items-center justify-between gap-3 rounded-lg px-3 py-2 text-sm text-slate-200 outline-none transition hover:bg-white/10 focus-visible:bg-white/10"
-                  >
-                    <span className="flex items-center gap-2.5">
-                      <span className="text-lg" aria-hidden="true">
-                        {sportIcon(g.group)}
-                      </span>
-                      {g.group}
-                    </span>
-                    <span className="text-xs text-slate-500">
-                      {g.leagueCount}
-                    </span>
-                  </Link>
-                </li>
-              ))}
+              {groups.map((g) => {
+                const expanded = expandedGroup === g.group;
+                const leaguesId = `sportsmenu-leagues-${g.group.replace(/\s+/g, '-').toLowerCase()}`;
+                return (
+                  <li key={g.group}>
+                    <div className="flex items-center justify-between gap-1 rounded-lg text-sm text-slate-200 transition hover:bg-white/10">
+                      <Link
+                        to={`/sport/${encodeURIComponent(g.group)}`}
+                        onClick={() => setIsOpen(false)}
+                        className="flex min-w-0 flex-1 items-center gap-2.5 rounded-lg px-3 py-2 outline-none focus-visible:bg-white/10"
+                      >
+                        <span className="text-lg" aria-hidden="true">
+                          {sportIcon(g.group)}
+                        </span>
+                        <span className="truncate">{g.group}</span>
+                      </Link>
+                      <button
+                        type="button"
+                        aria-expanded={expanded}
+                        aria-controls={leaguesId}
+                        aria-label={`${expanded ? 'Collapse' : 'Expand'} ${g.group} leagues`}
+                        onClick={() =>
+                          setExpandedGroup((current) =>
+                            current === g.group ? null : g.group,
+                          )
+                        }
+                        className="flex shrink-0 items-center gap-1 rounded-lg px-3 py-2 text-xs text-slate-500 outline-none transition hover:bg-white/10 hover:text-slate-300 data-[focus-visible]:ring-2 data-[focus-visible]:ring-accent/70"
+                      >
+                        {g.leagueCount}
+                        <ExpanderChevron expanded={expanded} />
+                      </button>
+                    </div>
+                    {expanded && (
+                      <ul
+                        id={leaguesId}
+                        className="ml-4 border-l border-white/10 pl-3"
+                      >
+                        {(leaguesByGroup.get(g.group) ?? []).map((league) => (
+                          <li key={league.key}>
+                            <Link
+                              to={`/sport/${encodeURIComponent(g.group)}/league/${league.key}`}
+                              onClick={() => setIsOpen(false)}
+                              className="block truncate rounded-lg px-3 py-1.5 text-sm text-slate-300 outline-none transition hover:bg-white/10 hover:text-white focus-visible:bg-white/10"
+                            >
+                              {league.title}
+                            </Link>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </li>
+                );
+              })}
             </ul>
           )}
         </Dialog>
