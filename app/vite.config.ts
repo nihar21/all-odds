@@ -14,9 +14,14 @@ function commitHash(): string {
   }
 }
 
-// Build into dist/all-odds to stay compatible with the existing Firebase Hosting config.
+// Build into dist/all-odds (i.e. app/dist/all-odds from the repo root) to stay
+// compatible with the existing Firebase Hosting config.
 export default defineConfig({
   plugins: [react()],
+  // Pre-restructure, .env lived at the repo root (Vite's default envDir).
+  // Keep reading it from there so root-level VITE_ODDS_API_KEY / VITE_GRAPHQL_URL
+  // overrides still work without users/CI having to relocate their .env.
+  envDir: '..',
   define: {
     __APP_VERSION__: JSON.stringify(pkg.version),
     __COMMIT_HASH__: JSON.stringify(commitHash()),
