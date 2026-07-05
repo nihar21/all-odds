@@ -23,8 +23,4 @@ isSupported()
     /* analytics is best-effort */
   });
 
-try {
-  getPerformance(firebaseApp);
-} catch {
-  /* performance monitoring is best-effort */
-}
+getPerformance(firebaseApp);
