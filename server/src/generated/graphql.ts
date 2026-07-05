@@ -106,6 +106,13 @@ export type Query = {
   leagues: Array<League>;
   /** Live + recently-completed scores for a league (one concrete league key; not "upcoming"). */
   liveScores: Array<LiveScore>;
+  /**
+   * Fuzzy, typo-tolerant search across sports, leagues, teams, and upcoming-game
+   * dates for the top bar's global search. Teams and dates are drawn from the
+   * bounded \"upcoming\" event set (see `events`), not an exhaustive per-league
+   * scan, so a team/date with no game in that window won't surface.
+   */
+  search: Array<SearchHit>;
 };
 
 
@@ -132,6 +139,11 @@ export type QueryLiveScoresArgs = {
   leagueKey: Scalars['ID']['input'];
 };
 
+
+export type QuerySearchArgs = {
+  query: Scalars['String']['input'];
+};
+
 export enum Region {
   Au = 'AU',
   Eu = 'EU',
@@ -144,6 +156,31 @@ export type ScoreEntry = {
   __typename?: 'ScoreEntry';
   name: Scalars['String']['output'];
   score: Scalars['String']['output'];
+};
+
+/** One of the four global-search result categories. */
+export enum SearchCategory {
+  Date = 'DATE',
+  League = 'LEAGUE',
+  Sport = 'SPORT',
+  Team = 'TEAM'
+}
+
+/** A single fuzzy-matched global-search result the client can navigate to. */
+export type SearchHit = {
+  __typename?: 'SearchHit';
+  category: SearchCategory;
+  /** Display label (a sport/league name, a team, or a formatted date). */
+  label: Scalars['String']['output'];
+  /** League key, to build the `/sport/:group/league/:leagueKey` route. */
+  leagueKey?: Maybe<Scalars['ID']['output']>;
+  /**
+   * Sport group, to build the `/sport/:group` route. Null for a DATE hit that
+   * spans multiple leagues.
+   */
+  sportGroup?: Maybe<Scalars['String']['output']>;
+  /** Secondary text shown under the label (e.g. a team's league). */
+  subtitle?: Maybe<Scalars['String']['output']>;
 };
 
 /** A team participating in an event. Logo enrichment (ESPN) is planned — see #16. */
@@ -241,6 +278,8 @@ export type ResolversTypes = ResolversObject<{
   Query: ResolverTypeWrapper<{}>;
   Region: Region;
   ScoreEntry: ResolverTypeWrapper<ScoreEntry>;
+  SearchCategory: SearchCategory;
+  SearchHit: ResolverTypeWrapper<SearchHit>;
   String: ResolverTypeWrapper<Scalars['String']['output']>;
   Team: ResolverTypeWrapper<Team>;
 }>;
@@ -259,6 +298,7 @@ export type ResolversParentTypes = ResolversObject<{
   Outcome: Outcome;
   Query: {};
   ScoreEntry: ScoreEntry;
+  SearchHit: SearchHit;
   String: Scalars['String']['output'];
   Team: Team;
 }>;
@@ -326,11 +366,21 @@ export type QueryResolvers<ContextType = GraphQLContext, ParentType extends Reso
   league?: Resolver<Maybe<ResolversTypes['League']>, ParentType, ContextType, RequireFields<QueryLeagueArgs, 'key'>>;
   leagues?: Resolver<Array<ResolversTypes['League']>, ParentType, ContextType, RequireFields<QueryLeaguesArgs, 'activeOnly'>>;
   liveScores?: Resolver<Array<ResolversTypes['LiveScore']>, ParentType, ContextType, RequireFields<QueryLiveScoresArgs, 'leagueKey'>>;
+  search?: Resolver<Array<ResolversTypes['SearchHit']>, ParentType, ContextType, RequireFields<QuerySearchArgs, 'query'>>;
 }>;
 
 export type ScoreEntryResolvers<ContextType = GraphQLContext, ParentType extends ResolversParentTypes['ScoreEntry'] = ResolversParentTypes['ScoreEntry']> = ResolversObject<{
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   score?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type SearchHitResolvers<ContextType = GraphQLContext, ParentType extends ResolversParentTypes['SearchHit'] = ResolversParentTypes['SearchHit']> = ResolversObject<{
+  category?: Resolver<ResolversTypes['SearchCategory'], ParentType, ContextType>;
+  label?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  leagueKey?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType>;
+  sportGroup?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  subtitle?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
@@ -349,6 +399,7 @@ export type Resolvers<ContextType = GraphQLContext> = ResolversObject<{
   Outcome?: OutcomeResolvers<ContextType>;
   Query?: QueryResolvers<ContextType>;
   ScoreEntry?: ScoreEntryResolvers<ContextType>;
+  SearchHit?: SearchHitResolvers<ContextType>;
   Team?: TeamResolvers<ContextType>;
 }>;
 

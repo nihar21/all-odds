@@ -1,0 +1,12 @@
+# Global search: sports/leagues (also searched client-side against the
+# already-cached leagues list) plus teams/dates from the bounded "upcoming"
+# event set, which only the backend can compute without per-league fetches.
+query Search($query: String!) {
+  search(query: $query) {
+    category
+    label
+    subtitle
+    sportGroup
+    leagueKey
+  }
+}

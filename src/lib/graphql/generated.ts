@@ -104,6 +104,13 @@ export type Query = {
   leagues: Array<League>;
   /** Live + recently-completed scores for a league (one concrete league key; not "upcoming"). */
   liveScores: Array<LiveScore>;
+  /**
+   * Fuzzy, typo-tolerant search across sports, leagues, teams, and upcoming-game
+   * dates for the top bar's global search. Teams and dates are drawn from the
+   * bounded \"upcoming\" event set (see `events`), not an exhaustive per-league
+   * scan, so a team/date with no game in that window won't surface.
+   */
+  search: Array<SearchHit>;
 };
 
 
@@ -130,6 +137,11 @@ export type QueryLiveScoresArgs = {
   leagueKey: Scalars['ID']['input'];
 };
 
+
+export type QuerySearchArgs = {
+  query: Scalars['String']['input'];
+};
+
 export enum Region {
   Au = 'AU',
   Eu = 'EU',
@@ -142,6 +154,31 @@ export type ScoreEntry = {
   __typename?: 'ScoreEntry';
   name: Scalars['String']['output'];
   score: Scalars['String']['output'];
+};
+
+/** One of the four global-search result categories. */
+export enum SearchCategory {
+  Date = 'DATE',
+  League = 'LEAGUE',
+  Sport = 'SPORT',
+  Team = 'TEAM'
+}
+
+/** A single fuzzy-matched global-search result the client can navigate to. */
+export type SearchHit = {
+  __typename?: 'SearchHit';
+  category: SearchCategory;
+  /** Display label (a sport/league name, a team, or a formatted date). */
+  label: Scalars['String']['output'];
+  /** League key, to build the `/sport/:group/league/:leagueKey` route. */
+  leagueKey?: Maybe<Scalars['ID']['output']>;
+  /**
+   * Sport group, to build the `/sport/:group` route. Null for a DATE hit that
+   * spans multiple leagues.
+   */
+  sportGroup?: Maybe<Scalars['String']['output']>;
+  /** Secondary text shown under the label (e.g. a team's league). */
+  subtitle?: Maybe<Scalars['String']['output']>;
 };
 
 /** A team participating in an event. Logo enrichment (ESPN) is planned — see #16. */
@@ -159,5 +196,13 @@ export type LeaguesQueryVariables = Exact<{
 
 export type LeaguesQuery = { __typename?: 'Query', leagues: Array<{ __typename?: 'League', key: string, group: string, title: string, description: string, active: boolean, hasOutrights: boolean }> };
 
+export type SearchQueryVariables = Exact<{
+  query: Scalars['String']['input'];
+}>;
+
+
+export type SearchQuery = { __typename?: 'Query', search: Array<{ __typename?: 'SearchHit', category: SearchCategory, label: string, subtitle?: string | null, sportGroup?: string | null, leagueKey?: string | null }> };
+
 
 export const LeaguesDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"Leagues"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"activeOnly"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"Boolean"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"leagues"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"activeOnly"},"value":{"kind":"Variable","name":{"kind":"Name","value":"activeOnly"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"key"}},{"kind":"Field","name":{"kind":"Name","value":"group"}},{"kind":"Field","name":{"kind":"Name","value":"title"}},{"kind":"Field","name":{"kind":"Name","value":"description"}},{"kind":"Field","name":{"kind":"Name","value":"active"}},{"kind":"Field","name":{"kind":"Name","value":"hasOutrights"}}]}}]}}]} as unknown as DocumentNode<LeaguesQuery, LeaguesQueryVariables>;
+export const SearchDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"Search"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"query"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"search"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"query"},"value":{"kind":"Variable","name":{"kind":"Name","value":"query"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"category"}},{"kind":"Field","name":{"kind":"Name","value":"label"}},{"kind":"Field","name":{"kind":"Name","value":"subtitle"}},{"kind":"Field","name":{"kind":"Name","value":"sportGroup"}},{"kind":"Field","name":{"kind":"Name","value":"leagueKey"}}]}}]}}]} as unknown as DocumentNode<SearchQuery, SearchQueryVariables>;
