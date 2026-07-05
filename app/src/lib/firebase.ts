@@ -1,5 +1,6 @@
 import { initializeApp } from 'firebase/app';
 import { getAnalytics, isSupported } from 'firebase/analytics';
+import { getPerformance } from 'firebase/performance';
 
 const firebaseConfig = {
   apiKey: 'AIzaSyBXC1_YjBXCtYHdiY_nQjTnyJs-sFhuQQY',
@@ -21,3 +22,9 @@ isSupported()
   .catch(() => {
     /* analytics is best-effort */
   });
+
+try {
+  getPerformance(firebaseApp);
+} catch {
+  /* performance monitoring is best-effort */
+}
