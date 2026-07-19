@@ -12,6 +12,7 @@ import { SportDetail } from './pages/SportDetail';
 import { LeagueDetails } from './pages/LeagueDetails';
 import { LiveSports } from './pages/LiveSports';
 import { Settings } from './pages/Settings';
+import { KalshiPreview } from './pages/KalshiPreview';
 
 const router = createBrowserRouter([
   {
@@ -27,6 +28,7 @@ const router = createBrowserRouter([
     children: [
       { path: '/', element: <SportsSelection /> },
       { path: '/live', element: <LiveSports /> },
+      { path: '/kalshi-preview', element: <KalshiPreview /> },
       { path: '/sport/:group', element: <SportDetail /> },
       { path: '/sport/:group/league/:leagueKey', element: <LeagueDetails /> },
       { path: '/settings', element: <Settings /> },
