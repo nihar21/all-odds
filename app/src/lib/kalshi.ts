@@ -6,6 +6,13 @@
 // scope for this spike.
 const KALSHI_BASE_URL = 'https://api.elections.kalshi.com/trade-api/v2';
 
+/**
+ * A market as normalized for use in this module: `last_price`/`yes_bid`/
+ * `yes_ask`/`no_bid`/`no_ask` are cents integers (0-99), which is what
+ * `centsToProbability`/`centsToAmericanOdds`/`centsToDecimalOdds` and the
+ * preview table expect. See `KalshiMarketRaw` for the wire shape this is
+ * derived from.
+ */
 export interface KalshiMarket {
   ticker: string;
   event_ticker: string;
@@ -20,9 +27,49 @@ export interface KalshiMarket {
   close_time: string;
 }
 
+/**
+ * The shape Kalshi's live `/markets` endpoint actually returns: prices are
+ * fixed-point decimal-dollar strings (e.g. `"0.63"` for 63 cents), not cents
+ * integers. See https://trading-api.readme.io/reference/getmarkets.
+ */
+interface KalshiMarketRaw {
+  ticker: string;
+  event_ticker: string;
+  title: string;
+  subtitle?: string;
+  yes_bid_dollars: string;
+  yes_ask_dollars: string;
+  no_bid_dollars: string;
+  no_ask_dollars: string;
+  last_price_dollars: string;
+  status: string;
+  close_time: string;
+}
+
 interface KalshiMarketsResponse {
-  markets: KalshiMarket[];
+  markets: KalshiMarketRaw[];
   cursor?: string;
+}
+
+/** Parse a Kalshi fixed-point decimal-dollar string (e.g. `"0.63"`) to a cents integer (0-99). */
+function dollarsToCents(dollars: string): number {
+  return Math.round(parseFloat(dollars) * 100);
+}
+
+function normalizeMarket(raw: KalshiMarketRaw): KalshiMarket {
+  return {
+    ticker: raw.ticker,
+    event_ticker: raw.event_ticker,
+    title: raw.title,
+    subtitle: raw.subtitle,
+    yes_bid: dollarsToCents(raw.yes_bid_dollars),
+    yes_ask: dollarsToCents(raw.yes_ask_dollars),
+    no_bid: dollarsToCents(raw.no_bid_dollars),
+    no_ask: dollarsToCents(raw.no_ask_dollars),
+    last_price: dollarsToCents(raw.last_price_dollars),
+    status: raw.status,
+    close_time: raw.close_time,
+  };
 }
 
 export class KalshiApiError extends Error {
@@ -73,8 +120,9 @@ export async function getKalshiMarkets({
   }
 
   const body = (await res.json()) as KalshiMarketsResponse;
-  cache.set(url, body.markets);
-  return body.markets;
+  const markets = body.markets.map(normalizeMarket);
+  cache.set(url, markets);
+  return markets;
 }
 
 /** A Kalshi "Yes" price in cents (1-99) as an implied probability (0-1). */
